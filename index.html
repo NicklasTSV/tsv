@@ -1,388 +1,604 @@
-
 <!DOCTYPE html>
+
 <html lang="de">
+
 <head>
+
   <meta charset="UTF-8" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Mannschaftsapp – Strafenkasse</title>
+
+  <link rel="manifest" href="manifest.json">
+
+  <link rel="icon" type="image/png" href="TSV.png">
+
+  <meta name="theme-color" content="#c42805">
+
   <style>
-    body {
-      font-family: sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-    }
-    header {
-      background: #000000;
-      color: white;
-      padding: 15px;
-      text-align: center;
-    }
-    nav {
-      display: flex;
-      justify-content: center;
-      background: #c42805;
-      flex-wrap: wrap;
-    }
+
+    body { font-family: sans-serif; background: #f5f5f5; margin: 0; }
+
+    header { background: #000; color: white; padding: 15px; text-align: center; }
+
+    nav { display: flex; justify-content: center; background: #c42805; flex-wrap: wrap; }
+
     nav button {
-      background: none;
-      border: none;
-      color: white;
-      padding: 15px;
-      cursor: pointer;
-      font-size: 16px;
+
+      background: none; border: none; color: white; padding: 15px;
+
+      cursor: pointer; font-size: 16px;
+
     }
-    nav button:hover {
-      background: #a30000;
-    }
-    section {
-      max-width: 800px;
-      margin: auto;
-      padding: 20px;
-      display: none;
-    }
+
+    nav button:hover { background: #a30000; }
+
+    section { max-width: 800px; margin: auto; padding: 20px; display: none; }
+
     input, select, button {
-      padding: 10px;
-      margin: 5px 0;
-      width: 100%;
-      box-sizing: border-box;
+
+      padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box;
+
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
+
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+
+    .clickable { cursor: pointer; color: blue; text-decoration: underline; }
+
+    #modal {
+
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+
+      background: rgba(0,0,0,0.5); justify-content: center; align-items: center;
+
     }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
+
+    #modalContent {
+
+      background: white; padding: 20px; max-width: 500px; max-height: 80vh;
+
+      overflow-y: auto; border-radius: 5px;
+
     }
-    .clickable {
-      cursor: pointer;
-      color: blue;
-      text-decoration: underline;
-    }
+
   </style>
+
 </head>
+
 <body>
+
+
 <header>
+
   <h1>⚽ Mannschafts-App <br> TSV Dramfeld</h1>
+
 </header>
 
+
 <nav>
+
   <button onclick="switchPage('home')">Strafen</button>
+
   <button onclick="switchPage('catalog')">Strafenkatalog</button>
+
   <button onclick="switchPage('schedule')">Termine</button>
+
   <button onclick="switchPage('docs')">Dokumente</button>
+
 </nav>
 
+
 <section id="login">
+
   <h2>🔐 Zugang</h2>
+
   <input type="password" id="pinInput" placeholder="PIN eingeben" />
+
   <button onclick="checkPIN()">Weiter</button>
+
 </section>
+
 
 <section id="home">
+
   <h2>Strafenübersicht</h2>
+
   <div id="penaltyEntry">
+
     <select id="playerSelect"></select>
+
     <select id="penaltySelect"></select>
+
     <button onclick="addPenalty()">Strafe eintragen</button>
+
   </div>
+
   <table>
+
     <thead><tr><th>Spieler</th><th>Summe (€)</th></tr></thead>
+
     <tbody id="summaryTable"></tbody>
+
   </table>
+
 </section>
+
 
 <section id="catalog">
+
   <h2>Strafenkatalog</h2>
+
   <ul id="penaltyList"></ul>
+
 </section>
+
 
 <section id="schedule">
+
   <h2>Termine</h2>
+
   <ul id="eventList"></ul>
+
 </section>
+
 
 <section id="docs">
+
   <h2>Dokumente</h2>
+
   <ul id="docList"></ul>
+
 </section>
+
 
 <section id="adminPanel">
+
   <h2>🔧 Admin Panel</h2>
+
   <div>
+
     <h3>Strafen</h3>
+
     <input id="newPenaltyName" placeholder="Strafe" />
+
     <input id="newPenaltyAmount" type="number" placeholder="Betrag" />
+
     <button onclick="addNewPenalty()">Hinzufügen</button>
+
     <ul id="adminPenaltyList"></ul>
 
+
     <h3>Spieler</h3>
+
     <input id="newPlayer" placeholder="Spielername" />
+
     <button onclick="addNewPlayer()">Hinzufügen</button>
+
     <ul id="adminPlayerList"></ul>
 
+
     <h3>Dokumente</h3>
+
     <input id="newDocName" placeholder="Name" />
+
     <input id="newDocURL" placeholder="https://..." />
+
     <button onclick="addNewDoc()">Hinzufügen</button>
+
     <ul id="adminDocList"></ul>
 
+
     <h3>Termine</h3>
+
     <input id="newEventText" placeholder="Terminbeschreibung" />
+
     <input id="newEventDate" type="date" />
+
     <button onclick="addNewEvent()">Hinzufügen</button>
+
     <ul id="adminEventList"></ul>
+
   </div>
+
 </section>
 
-<script>
 
-  // Session-Login-Zustände
-  const ROLE_VIEWER = "viewer";
-  const ROLE_EDITOR = "editor";
-  const ROLE_ADMIN = "admin";
+<!-- Modal -->
 
-  let sessionRole = sessionStorage.getItem("role");
+<div id="modal">
 
-  function isLoggedIn() {
-    return sessionRole !== null;
-  }
+  <div id="modalContent">
 
-  function loginWithPIN(pin) {
-    if (pin === BASIC_PIN) {
-      sessionStorage.setItem("role", ROLE_VIEWER);
-      userRole = ROLE_VIEWER;
-      switchPage("home");
-    } else if (pin === POWER_PIN) {
-      sessionStorage.setItem("role", ROLE_EDITOR);
-      userRole = ROLE_EDITOR;
-      switchPage("home");
-    } else if (pin === ADMIN_PIN) {
-      sessionStorage.setItem("role", ROLE_ADMIN);
-      userRole = ROLE_ADMIN;
-      switchPage("adminPanel");
-    } else {
-      alert("Falsche PIN!");
-      return;
-    }
-    setupApp();
-  }
+    <h3 id="modalTitle"></h3>
 
-  function requireLogin(page) {
-    if (!isLoggedIn()) {
-      alert("Bitte zuerst PIN eingeben.");
-      switchPage("login");
-      return false;
-    }
-    return true;
-  }
+    <ul id="modalDetails"></ul>
 
-  window.onload = () => {
-    const savedRole = sessionStorage.getItem("role");
-      if (savedRole) {
-      userRole = savedRole;
-        if (userRole === ROLE_ADMIN) {
-        switchPage("adminPanel");
-        } else {
-        switchPage("home");
-        }
-      setupApp();
-    } else {
-      switchPage("login");
-    }
+    <button onclick="closeModal()">Zurück</button>
+
+  </div>
+
+</div>
+
+
+<!-- Firebase Integration -->
+
+<script type="module">
+
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+
+  import { getDatabase, ref, set, get, onValue, push, update } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+
+
+  const firebaseConfig = {
+
+    apiKey: "AIzaSyAb5J0yQMnNvSOtqfWvqFaaoVBjRRZxUaA",
+
+    authDomain: "tsv-app-54006.firebaseapp.com",
+
+    projectId: "tsv-app-54006",
+
+    storageBucket: "tsv-app-54006.appspot.com",
+
+    messagingSenderId: "694629601085",
+
+    appId: "1:694629601085:web:4d40166a2d5445e3113f54",
+
+    databaseURL: "https://tsv-app-54006-default-rtdb.europe-west1.firebasedatabase.app"
+
   };
 
+
+  const app = initializeApp(firebaseConfig);
+
+  const db = getDatabase(app);
+
+
   const BASIC_PIN = "1919_2025";
+
   const POWER_PIN = "TSV!1919";
+
   const ADMIN_PIN = "Strafen!2025";
+
+
   let userRole = null;
 
-  let penalties = JSON.parse(localStorage.getItem("penalties")) || [
-    { name: "Trikot vergessen", amount: 5 },
-    { name: "Zu spät", amount: 2 }
-  ];
-  let players = JSON.parse(localStorage.getItem("players")) || ["Max", "Tom"];
-  let summary = JSON.parse(localStorage.getItem("summary")) || {};
-  let docs = JSON.parse(localStorage.getItem("docs")) || [];
-  let events = JSON.parse(localStorage.getItem("events")) || [];
 
-  function switchPage(id) {
-   //Zugriff
-   const role = sessionStorage.getItem("role");
+  const ROLE_VIEWER = "viewer";
 
-    if (!role && id !== "login") {
-      alert("Bitte zuerst PIN eingeben.");
-      id = "login";
+  const ROLE_EDITOR = "editor";
+
+  const ROLE_ADMIN = "admin";
+
+
+  const pages = ["home", "catalog", "schedule", "docs", "adminPanel", "login"];
+
+
+  const switchPage = (id) => {
+
+    if (!sessionStorage.getItem("role") && id !== "login") {
+
+      alert("Bitte zuerst PIN eingeben."); id = "login";
+
     }
 
-    //Alle Seiten ausblenden
-    document.querySelectorAll("section").forEach(s => s.style.display = "none");
+    pages.forEach(p => document.getElementById(p).style.display = "none");
 
-    //gewählte Seite anzeigen
-    const target = document.getElementById(id);
-    if (target) {
-      target.style.display = "block";
-    }
-  }
-  
+    const el = document.getElementById(id);
 
-  function checkPIN() {
-    const pin = document.getElementById("pinInput").value;
-    loginWithPIN(pin);
-    return;
-    if (pin === BASIC_PIN) {
-      userRole = "viewer";
-      switchPage('home');
-      setupApp();
-    } else if (pin === POWER_PIN) {
-      userRole = "editor";
-      switchPage('home');
-      setupApp();
-    } else if (pin === ADMIN_PIN) {
-      userRole = "admin";
-      switchPage('adminPanel');
-      setupApp();
+    if (el) el.style.display = "block";
+
+  };
+
+
+  window.onload = () => {
+
+    const savedRole = sessionStorage.getItem("role");
+
+    if (savedRole) {
+
+      userRole = savedRole;
+
+      switchPage(savedRole === ROLE_ADMIN ? "adminPanel" : "home");
+
+      loadData();
+
     } else {
-      alert("Falsche PIN");
+
+      switchPage("login");
+
     }
+
+  };
+
+
+  window.checkPIN = () => {
+
+    const pin = document.getElementById("pinInput").value;
+
+    if (pin === BASIC_PIN) {
+
+      userRole = ROLE_VIEWER;
+
+    } else if (pin === POWER_PIN) {
+
+      userRole = ROLE_EDITOR;
+
+    } else if (pin === ADMIN_PIN) {
+
+      userRole = ROLE_ADMIN;
+
+    } else {
+
+      alert("Falsche PIN"); return;
+
+    }
+
+    sessionStorage.setItem("role", userRole);
+
+    switchPage(userRole === ROLE_ADMIN ? "adminPanel" : "home");
+
+    loadData();
+
+  };
+
+
+  // -------------------------------
+
+  // 🔄 Live-Daten aus Firebase laden
+
+  // -------------------------------
+
+  let penalties = [], players = [], docs = [], events = [], playerPenalties = {};
+
+
+  function loadData() {
+
+    onValue(ref(db, "penaltiesList"), snap => {
+
+      penalties = snap.val() || [];
+
+      updateSelects(); updatePenaltyList(); updateAdminPanel();
+
+    });
+
+
+    onValue(ref(db, "players"), snap => {
+
+      players = snap.val() || [];
+
+      updateSelects(); updateSummary(); updateAdminPanel();
+
+    });
+
+
+    onValue(ref(db, "docs"), snap => {
+
+      docs = snap.val() || [];
+
+      updateDocList(); updateAdminPanel();
+
+    });
+
+
+    onValue(ref(db, "events"), snap => {
+
+      events = snap.val() || [];
+
+      updateEventList(); updateAdminPanel();
+
+    });
+
+
+    onValue(ref(db, "playerPenalties"), snap => {
+
+      playerPenalties = snap.val() || {};
+
+      updateSummary();
+
+    });
+
+
+    document.getElementById("penaltyEntry").style.display =
+
+      userRole === ROLE_ADMIN || userRole === ROLE_EDITOR ? "block" : "none";
+
   }
 
-  function setupApp() {
-    updateSelects();
-    updateSummary();
-    updatePenaltyList();
-    updateEventList();
-    updateDocList();
-    updateAdminPanel();
-    document.getElementById("penaltyEntry").style.display = (userRole === "editor" || userRole === "admin") ? "block" : "none";
-  }
 
   function updateSelects() {
+
     const ps = document.getElementById("playerSelect");
+
     const pe = document.getElementById("penaltySelect");
+
     ps.innerHTML = ""; pe.innerHTML = "";
-    players.forEach(p => {
-      ps.innerHTML += `<option value="${p}">${p}</option>`;
-    });
-    penalties.forEach((p, i) => {
-      pe.innerHTML += `<option value="${i}">${p.name} (${p.amount} €)</option>`;
-    });
+
+    players.forEach(p => ps.innerHTML += `<option>${p}</option>`);
+
+    penalties.forEach((p, i) => pe.innerHTML += `<option value="${i}">${p.name} (${p.amount} €)</option>`);
+
   }
 
-  function addPenalty() {
-    const p = document.getElementById("playerSelect").value;
-    const idx = parseInt(document.getElementById("penaltySelect").value);
+
+  window.addPenalty = () => {
+
+    const player = document.getElementById("playerSelect").value;
+
+    const idx = document.getElementById("penaltySelect").value;
+
     const pen = penalties[idx];
-    summary[p] = (summary[p] || 0) + pen.amount;
-    localStorage.setItem("summary", JSON.stringify(summary));
-    updateSummary();
-  }
+
+    const entry = {
+
+      name: pen.name,
+
+      amount: pen.amount,
+
+      date: new Date().toISOString().split("T")[0]
+
+    };
+
+    push(ref(db, `playerPenalties/${player}`), entry);
+
+  };
+
 
   function updateSummary() {
+
     const tb = document.getElementById("summaryTable");
+
     tb.innerHTML = "";
+
     players.forEach(p => {
-      tb.innerHTML += `<tr><td>${p}</td><td>${(summary[p] || 0).toFixed(2)} €</td></tr>`;
+
+      const total = (playerPenalties[p] ? Object.values(playerPenalties[p]).reduce((sum, e) => sum + Number(e.amount), 0) : 0).toFixed(2);
+
+      tb.innerHTML += `<tr><td class="clickable" onclick="showDetails('${p}')">${p}</td><td>${total} €</td></tr>`;
+
     });
+
   }
+
 
   function updatePenaltyList() {
-    const ul = document.getElementById("penaltyList");
-    ul.innerHTML = "";
-    penalties.forEach(p => {
-      ul.innerHTML += `<li>${p.name} – ${p.amount.toFixed(2)} €</li>`;
-    });
+
+    document.getElementById("penaltyList").innerHTML = penalties.map(p => `<li>${p.name} – ${p.amount} €</li>`).join("");
+
   }
+
 
   function updateEventList() {
-    const ul = document.getElementById("eventList");
-    ul.innerHTML = "";
-    events.forEach(e => {
-      ul.innerHTML += `<li>📅 ${e.date} – ${e.text}</li>`;
-    });
+
+    document.getElementById("eventList").innerHTML = events.map(e => `<li>📅 ${e.date} – ${e.text}</li>`).join("");
+
   }
+
 
   function updateDocList() {
-    const ul = document.getElementById("docList");
-    ul.innerHTML = "";
-    docs.forEach(d => {
-      ul.innerHTML += `<li><a href="${d.url}" target="_blank">${d.name}</a></li>`;
-    });
+
+    document.getElementById("docList").innerHTML = docs.map(d => `<li><a href="${d.url}" target="_blank">${d.name}</a></li>`).join("");
+
   }
+
 
   function updateAdminPanel() {
+
     document.getElementById("adminPenaltyList").innerHTML =
-      penalties.map((p, i) => `<li>${p.name} – ${p.amount} € <button onclick="deletePenalty(${i})">🗑️</button></li>`).join("");
+
+      penalties.map((p, i) => `<li>${p.name} – ${p.amount} €</li>`).join("");
+
     document.getElementById("adminPlayerList").innerHTML =
-      players.map((p, i) => `<li>${p} <button onclick="deletePlayer(${i})">🗑️</button></li>`).join("");
+
+      players.map((p, i) => `<li>${p}</li>`).join("");
+
     document.getElementById("adminDocList").innerHTML =
-      docs.map((d, i) => `<li>${d.name} <button onclick="deleteDoc(${i})">🗑️</button></li>`).join("");
+
+      docs.map((d, i) => `<li>${d.name}</li>`).join("");
+
     document.getElementById("adminEventList").innerHTML =
-      events.map((e, i) => `<li>${e.date} – ${e.text} <button onclick="deleteEvent(${i})">🗑️</button></li>`).join("");
+
+      events.map((e, i) => `<li>${e.date} – ${e.text}</li>`).join("");
+
   }
 
-  function addNewPenalty() {
+
+  // Admin-Funktionen
+
+  window.addNewPenalty = () => {
+
     const name = document.getElementById("newPenaltyName").value;
+
     const amount = parseFloat(document.getElementById("newPenaltyAmount").value);
+
     if (!name || isNaN(amount)) return;
-    penalties.push({ name, amount });
-    localStorage.setItem("penalties", JSON.stringify(penalties));
-    setupApp();
-  }
 
-  function deletePenalty(i) {
-    penalties.splice(i, 1);
-    localStorage.setItem("penalties", JSON.stringify(penalties));
-    setupApp();
-  }
+    set(ref(db, `penaltiesList/${penalties.length}`), { name, amount });
 
-  function addNewPlayer() {
+  };
+
+
+  window.addNewPlayer = () => {
+
     const name = document.getElementById("newPlayer").value;
+
     if (!name) return;
-    players.push(name);
-    localStorage.setItem("players", JSON.stringify(players));
-    setupApp();
-  }
 
-  function deletePlayer(i) {
-    players.splice(i, 1);
-    localStorage.setItem("players", JSON.stringify(players));
-    setupApp();
-  }
+    set(ref(db, `players/${players.length}`), name);
 
-  function addNewDoc() {
+  };
+
+
+  window.addNewDoc = () => {
+
     const name = document.getElementById("newDocName").value;
+
     const url = document.getElementById("newDocURL").value;
+
     if (!name || !url) return;
-    docs.push({ name, url });
-    localStorage.setItem("docs", JSON.stringify(docs));
-    setupApp();
-  }
 
-  function deleteDoc(i) {
-    docs.splice(i, 1);
-    localStorage.setItem("docs", JSON.stringify(docs));
-    setupApp();
-  }
+    set(ref(db, `docs/${docs.length}`), { name, url });
 
-  function addNewEvent() {
+  };
+
+
+  window.addNewEvent = () => {
+
     const text = document.getElementById("newEventText").value;
+
     const date = document.getElementById("newEventDate").value;
+
     if (!text || !date) return;
-    events.push({ text, date });
-    localStorage.setItem("events", JSON.stringify(events));
-    setupApp();
-  }
 
-  function deleteEvent(i) {
-    events.splice(i, 1);
-    localStorage.setItem("events", JSON.stringify(events));
-    setupApp();
-  }
+    set(ref(db, `events/${events.length}`), { text, date });
 
-  
+  };
+
+
+  // MODAL Detailansicht
+
+  window.showDetails = (player) => {
+
+    const list = playerPenalties[player];
+
+    const modal = document.getElementById("modal");
+
+    document.getElementById("modalTitle").innerText = `Strafen für ${player}`;
+
+    const ul = document.getElementById("modalDetails");
+
+    ul.innerHTML = "";
+
+    if (!list) {
+
+      ul.innerHTML = "<li>Keine Strafen</li>";
+
+    } else {
+
+      Object.values(list).forEach(p =>
+
+        ul.innerHTML += `<li>${p.date}: ${p.name} – ${p.amount} €</li>`
+
+      );
+
+    }
+
+    modal.style.display = "flex";
+
+  };
+
+
+  window.closeModal = () => {
+
+    document.getElementById("modal").style.display = "none";
+
+  };
+
 </script>
+
+
 </body>
+
 </html>
