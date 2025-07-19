@@ -1,40 +1,15 @@
 {
-
-  "name": "TSV Dramfeld Mannschaftsapp",
-
+  "name": "TSV Dramfeld App",
   "short_name": "TSV App",
-
   "start_url": "index.html",
-
   "display": "standalone",
-
   "background_color": "#ffffff",
-
   "theme_color": "#c42805",
-
   "icons": [
-
     {
-
       "src": "TSV.png",
-
       "type": "image/png",
-
-      "sizes": "192x192"
-
-    },
-
-    {
-
-      "src": "TSV.png",
-
-      "type": "image/png",
-
       "sizes": "512x512"
-
     }
-
   ]
-
 }
-
