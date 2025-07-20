@@ -5,7 +5,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mannschaftsapp – Strafenkasse</title>
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#c42805" />
+
   <style>
     body {
       font-family: sans-serif;
@@ -13,7 +15,7 @@
       margin: 0;
     }
     header {
-      background: #000;
+      background: #000000;
       color: white;
       padding: 15px;
       text-align: center;
@@ -62,11 +64,6 @@
       color: blue;
       text-decoration: underline;
     }
-    .back-button {
-      margin-top: 40px;
-      display: block;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
@@ -89,7 +86,7 @@
 
 <section id="home">
   <h2>Strafenübersicht</h2>
-  <div id="penaltyEntry" style="display:none;">
+  <div id="penaltyEntry">
     <select id="playerSelect"></select>
     <select id="penaltySelect"></select>
     <button onclick="addPenalty()">Strafe eintragen</button>
@@ -98,12 +95,23 @@
     <thead><tr><th>Spieler</th><th>Summe (€)</th></tr></thead>
     <tbody id="summaryTable"></tbody>
   </table>
-  <div id="playerDetails"></div>
 </section>
 
-<section id="catalog"><h2>Strafenkatalog</h2><ul id="penaltyList"></ul></section>
-<section id="schedule"><h2>Termine</h2><ul id="eventList"></ul></section>
-<section id="docs"><h2>Dokumente</h2><ul id="docList"></ul></section>
+<section id="catalog">
+  <h2>Strafenkatalog</h2>
+  <ul id="penaltyList"></ul>
+</section>
+
+<section id="schedule">
+  <h2>Termine</h2>
+  <ul id="eventList"></ul>
+</section>
+
+<section id="docs">
+  <h2>Dokumente</h2>
+  <ul id="docList"></ul>
+</section>
+
 <section id="adminPanel">
   <h2>🔧 Admin Panel</h2>
   <div>
@@ -112,15 +120,18 @@
     <input id="newPenaltyAmount" type="number" placeholder="Betrag" />
     <button onclick="addNewPenalty()">Hinzufügen</button>
     <ul id="adminPenaltyList"></ul>
+
     <h3>Spieler</h3>
     <input id="newPlayer" placeholder="Spielername" />
     <button onclick="addNewPlayer()">Hinzufügen</button>
     <ul id="adminPlayerList"></ul>
+
     <h3>Dokumente</h3>
     <input id="newDocName" placeholder="Name" />
     <input id="newDocURL" placeholder="https://..." />
     <button onclick="addNewDoc()">Hinzufügen</button>
     <ul id="adminDocList"></ul>
+
     <h3>Termine</h3>
     <input id="newEventText" placeholder="Terminbeschreibung" />
     <input id="newEventDate" type="date" />
@@ -129,152 +140,483 @@
   </div>
 </section>
 
-<div class="back-button">
-  <button onclick="goToLogin()">🔁 Zurück zur Anmeldung</button>
-</div>
-
 <script>
-  const BASIC_PIN = "1919_2025";
-  const POWER_PIN = "TSV!1919";
-  const ADMIN_PIN = "Strafen!2025";
+
+  // Session-Login-Zustände
   const ROLE_VIEWER = "viewer";
   const ROLE_EDITOR = "editor";
   const ROLE_ADMIN = "admin";
-  let userRole = sessionStorage.getItem("role");
-  let players = JSON.parse(localStorage.getItem("players")) || ["Max", "Tom"];
-  let penalties = JSON.parse(localStorage.getItem("penalties")) || [
-    { name: "Trikot vergessen", amount: 5 },
-    { name: "Zu spät", amount: 2 }
-  ];
-  let summary = JSON.parse(localStorage.getItem("summary")) || {};
-  let docs = JSON.parse(localStorage.getItem("docs")) || [];
-  let events = JSON.parse(localStorage.getItem("events")) || [];
-  let playerPenalties = JSON.parse(localStorage.getItem("playerPenalties")) || {};
 
-  function switchPage(id) {
-    if (!userRole) {
-      alert("Bitte zuerst PIN eingeben.");
-      id = "login";
+  let sessionRole = sessionStorage.getItem("role");
+
+  function isLoggedIn() {
+    return sessionRole !== null;
+  }
+
+  function loginWithPIN(pin) {
+    if (pin === BASIC_PIN) {
+      sessionStorage.setItem("role", ROLE_VIEWER);
+      userRole = ROLE_VIEWER;
+      switchPage("home");
+    } else if (pin === POWER_PIN) {
+      sessionStorage.setItem("role", ROLE_EDITOR);
+      userRole = ROLE_EDITOR;
+      switchPage("home");
+    } else if (pin === ADMIN_PIN) {
+      sessionStorage.setItem("role", ROLE_ADMIN);
+      userRole = ROLE_ADMIN;
+      switchPage("adminPanel");
+    } else {
+      alert("Falsche PIN!");
+      return;
     }
-    document.querySelectorAll("section").forEach(s => s.style.display = "none");
-    document.getElementById(id).style.display = "block";
-  }
-
-  function goToLogin() {
-    sessionStorage.clear();
-    location.reload();
-  }
-
-  function checkPIN() {
-    const pin = document.getElementById("pinInput").value;
-    if (pin === BASIC_PIN) userRole = ROLE_VIEWER;
-    else if (pin === POWER_PIN) userRole = ROLE_EDITOR;
-    else if (pin === ADMIN_PIN) userRole = ROLE_ADMIN;
-    else return alert("Falsche PIN!");
-    sessionStorage.setItem("role", userRole);
-    switchPage(userRole === ROLE_ADMIN ? "adminPanel" : "home");
     setupApp();
   }
 
+  function requireLogin(page) {
+    if (!isLoggedIn()) {
+      alert("Bitte zuerst PIN eingeben.");
+      switchPage("login");
+      return false;
+    }
+    return true;
+  }
+
+  window.onload = () => {
+    const savedRole = sessionStorage.getItem("role");
+      if (savedRole) {
+      userRole = savedRole;
+        if (userRole === ROLE_ADMIN) {
+        switchPage("adminPanel");
+        } else {
+        switchPage("home");
+        }
+      setupApp();
+    } else {
+      switchPage("login");
+    }
+  };
+
+  const BASIC_PIN = "1919_2025";
+  const POWER_PIN = "TSV!1919";
+  const ADMIN_PIN = "Strafen!2025";
+  let userRole = null;
+
+let penalties = []; // z. B. [{id: "...", name: "...", amount: 5}]
+
+function loadPenaltiesFromFirebase() {
+  const penRef = ref(db, "penalties");
+  onValue(penRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      penalties = Object.entries(data).map(([id, obj]) => ({
+        id,
+        name: obj.name,
+        amount: obj.amount
+      }));
+    } else {
+      penalties = [];
+    }
+    updateSelects();
+    updatePenaltyList();
+    updateAdminPanel();
+  });
+}
+
+let players = []; // z. B. [{id: "...", name: "Max"}, ...]
+
+function loadPlayersFromFirebase() {
+  const playersRef = ref(db, "players");
+  onValue(playersRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      players = Object.entries(data).map(([id, name]) => ({ id, name }));
+    } else {
+      players = [];
+    }
+    updateSelects();
+    updateSummary();
+    updateAdminPanel();
+  });
+}
+
+function loadDocsFromFirebase() {
+  const ul = document.getElementById("docList");
+  const adminUl = document.getElementById("adminDocList");
+
+  onValue(docsRef, (snapshot) => {
+    const data = snapshot.val();
+    ul.innerHTML = "";
+    adminUl.innerHTML = "";
+
+    if (data) {
+      Object.entries(data).forEach(([key, doc]) => {
+        const item = `<li><a href="${doc.url}" target="_blank">${doc.name}</a>`;
+        const deleteBtn = (userRole === "admin")
+          ? ` <button onclick="deleteDoc('${key}')">🗑️</button>`
+          : "";
+
+        ul.innerHTML += `${item}${deleteBtn}</li>`;
+        adminUl.innerHTML += `${item}${deleteBtn}</li>`;
+      });
+    }
+  });
+}
+
+function loadEventsFromFirebase() {
+  const ul = document.getElementById("eventList");
+  const adminUl = document.getElementById("adminEventList");
+
+  onValue(eventRef, (snapshot) => {
+    const data = snapshot.val();
+    ul.innerHTML = "";
+    adminUl.innerHTML = "";
+
+    if (data) {
+      Object.entries(data).forEach(([key, e]) => {
+        const item = `📅 ${e.date} – ${e.text}`;
+        const deleteBtn = (userRole === "admin")
+          ? ` <button onclick="deleteEvent('${key}')">🗑️</button>`
+          : "";
+
+        ul.innerHTML += `<li>${item}${deleteBtn}</li>`;
+        adminUl.innerHTML += `<li>${item}${deleteBtn}</li>`;
+      });
+    }
+  });
+}
+
+
+  let summary = JSON.parse(localStorage.getItem("summary")) || {};
+  let docs = JSON.parse(localStorage.getItem("docs")) || [];
+  let events = JSON.parse(localStorage.getItem("events")) || [];
+
+  function switchPage(id) {
+   //Zugriff
+   const role = sessionStorage.getItem("role");
+
+    if (!role && id !== "login") {
+      alert("Bitte zuerst PIN eingeben.");
+      id = "login";
+    }
+
+    //Alle Seiten ausblenden
+    document.querySelectorAll("section").forEach(s => s.style.display = "none");
+
+    //gewählte Seite anzeigen
+    const target = document.getElementById(id);
+    if (target) {
+      target.style.display = "block";
+    }
+  }
+  
+
+  function checkPIN() {
+    const pin = document.getElementById("pinInput").value;
+    loginWithPIN(pin);
+    return;
+    if (pin === BASIC_PIN) {
+      userRole = "viewer";
+      switchPage('home');
+      setupApp();
+    } else if (pin === POWER_PIN) {
+      userRole = "editor";
+      switchPage('home');
+      setupApp();
+    } else if (pin === ADMIN_PIN) {
+      userRole = "admin";
+      switchPage('adminPanel');
+      setupApp();
+    } else {
+      alert("Falsche PIN");
+    }
+  }
+
+function logout() {
+  sessionStorage.clear(); // Login-Status löschen
+  switchPage("login");    // zurück zur Login-Seite
+}
+
   function setupApp() {
-    updateSelects(); updateSummary(); updateLists(); updateAdminPanel();
-    document.getElementById("penaltyEntry").style.display = (userRole === ROLE_ADMIN || userRole === ROLE_EDITOR) ? "block" : "none";
+  loadPlayersFromFirebase();
+  updateSelects();
+  updateSummary();
+  loadPenaltiesFromFirebase();
+  loadEventsFromFirebase();
+  loadDocsFromFirebase();
+  updateAdminPanel();
+    document.getElementById("penaltyEntry").style.display = (userRole === "editor" || userRole === "admin") ? "block" : "none";
   }
 
   function updateSelects() {
-    let ps = document.getElementById("playerSelect"), pe = document.getElementById("penaltySelect");
+    const ps = document.getElementById("playerSelect");
+  ps.innerHTML = "";
+  players.forEach(p => {
+    ps.innerHTML += `<option value="${p}">${p}</option>`;
+  });
+}
+    const pe = document.getElementById("penaltySelect");
     ps.innerHTML = ""; pe.innerHTML = "";
-    players.forEach(p => ps.innerHTML += `<option value="${p}">${p}</option>`);
-    penalties.forEach((p, i) => pe.innerHTML += `<option value="${i}">${p.name} (${p.amount} €)</option>`);
-  }
-
-  function addPenalty() {
-    const p = document.getElementById("playerSelect").value;
-    const idx = parseInt(document.getElementById("penaltySelect").value);
-    const pen = penalties[idx];
-    summary[p] = (summary[p] || 0) + pen.amount;
-    playerPenalties[p] = playerPenalties[p] || [];
-    playerPenalties[p].push(pen);
-    saveLocal();
-    updateSummary();
-  }
-
-  function updateSummary() {
-    const tb = document.getElementById("summaryTable");
-    tb.innerHTML = "";
     players.forEach(p => {
-      tb.innerHTML += `<tr><td class="clickable" onclick="showDetails('${p}')">${p}</td><td>${(summary[p] || 0).toFixed(2)} €</td></tr>`;
+      ps.innerHTML += `<option value="${p}">${p}</option>`;
     });
-  }
+    penalties.forEach((p, i) => {
+      pe.innerHTML += `<option value="${i}">${p.name} (${p.amount} €)</option>`;
+    });
 
-  function showDetails(player) {
-    const details = playerPenalties[player] || [];
-    const container = document.getElementById("playerDetails");
-    container.innerHTML = `<h3>Details für ${player}</h3><ul>${details.map(p => `<li>${p.name} – ${p.amount} €</li>`).join("")}</ul>`;
-  }
 
-  function updateLists() {
-    document.getElementById("penaltyList").innerHTML = penalties.map(p => `<li>${p.name} – ${p.amount} €</li>`).join("");
-    document.getElementById("eventList").innerHTML = events.map(e => `<li>${e.date} – ${e.text}</li>`).join("");
-    document.getElementById("docList").innerHTML = docs.map(d => `<li><a href="${d.url}" target="_blank">${d.name}</a></li>`).join("");
-  }
+function addPenalty() {
+  const player = document.getElementById("playerSelect").value;
+  const penaltyIndex = parseInt(document.getElementById("penaltySelect").value);
+  const penalty = penalties[penaltyIndex];
+
+  if (!player || !penalty) return;
+
+  const penaltyRef = push(ref(db, `playerPenalties/${player}`));
+  set(penaltyRef, {
+    name: penalty.name,
+    amount: penalty.amount,
+    timestamp: new Date().toISOString()
+  });
+}
+
+
+function updateSummary() {
+  const tb = document.getElementById("summaryTable");
+  tb.innerHTML = "";
+
+  players.forEach(player => {
+    const playerRef = ref(db, `playerPenalties/${player.name}`);
+    onValue(playerRef, (snapshot) => {
+      const data = snapshot.val();
+      let sum = 0;
+      if (data) {
+        Object.values(data).forEach(p => sum += p.amount);
+      }
+
+      tb.innerHTML += `<tr>
+        <td class="clickable" onclick="showPlayerDetails('${player.name}')">${player.name}</td>
+        <td>${sum.toFixed(2)} €</td>
+      </tr>`;
+    });
+  });
+}
+
+
+function updatePenaltyList() {
+  const ul = document.getElementById("penaltyList");
+  ul.innerHTML = "";
+  penalties.forEach(p => {
+    ul.innerHTML += `<li>${p.name} – ${p.amount.toFixed(2)} €</li>`;
+  });
+}
+
+function updateEventList() {
+  const ul = document.getElementById("eventList");
+  onValue(eventRef, (snapshot) => {
+    const data = snapshot.val();
+    ul.innerHTML = "";
+
+    if (data) {
+      Object.entries(data).forEach(([key, e]) => {
+        const deleteButton = (userRole === "admin")
+          ? `<button onclick="deleteEvent('${key}')">🗑️</button>`
+          : "";
+
+        ul.innerHTML += `<li>📅 ${e.date} – ${e.text} ${deleteButton}</li>`;
+      });
+    }
+  });
+}
+
+  function updateDocList() {
+  const ul = document.getElementById("docList");
+  onValue(docsRef, (snapshot) => {
+    const data = snapshot.val();
+    ul.innerHTML = "";
+
+    if (data) {
+      Object.entries(data).forEach(([key, doc]) => {
+        const deleteButton = (userRole === "admin")
+          ? `<button onclick="deleteDoc('${key}')">🗑️</button>`
+          : "";
+
+        ul.innerHTML += `<li><a href="${doc.url}" target="_blank">${doc.name}</a> ${deleteButton}</li>`;
+      });
+    }
+  });
+}
 
   function updateAdminPanel() {
     document.getElementById("adminPenaltyList").innerHTML =
-      penalties.map((p, i) => `<li>${p.name} – ${p.amount} € <button onclick="deletePenalty(${i})">🗑️</button></li>`).join("");
-    document.getElementById("adminPlayerList").innerHTML =
-      players.map((p, i) => `<li>${p} <button onclick="deletePlayer(${i})">🗑️</button></li>`).join("");
+  penalties.map((p) =>
+    `<li>${p.name} – ${p.amount} € <button onclick="deletePenalty('${p.id}')">🗑️</button></li>`
+  ).join("");
+  document.getElementById("adminPlayerList").innerHTML =
+  players.map((p) =>
+    `<li>${p.name} <button onclick="deletePlayer('${p.id}')">🗑️</button></li>`
+  ).join("");
+
     document.getElementById("adminDocList").innerHTML =
       docs.map((d, i) => `<li>${d.name} <button onclick="deleteDoc(${i})">🗑️</button></li>`).join("");
     document.getElementById("adminEventList").innerHTML =
       events.map((e, i) => `<li>${e.date} – ${e.text} <button onclick="deleteEvent(${i})">🗑️</button></li>`).join("");
   }
 
-  function saveLocal() {
-    localStorage.setItem("summary", JSON.stringify(summary));
-    localStorage.setItem("playerPenalties", JSON.stringify(playerPenalties));
-  }
+function addNewPenalty() {
+  const name = document.getElementById("newPenaltyName").value;
+  const amount = parseFloat(document.getElementById("newPenaltyAmount").value);
+  if (!name || isNaN(amount)) return;
 
-  function addNewPenalty() {
-    const name = document.getElementById("newPenaltyName").value;
-    const amount = parseFloat(document.getElementById("newPenaltyAmount").value);
-    if (!name || isNaN(amount)) return;
-    penalties.push({ name, amount });
-    localStorage.setItem("penalties", JSON.stringify(penalties));
-    setupApp();
-  }
-  function deletePenalty(i) { penalties.splice(i,1); localStorage.setItem("penalties", JSON.stringify(penalties)); setupApp(); }
-  function addNewPlayer() {
-    const name = document.getElementById("newPlayer").value;
-    if (!name) return;
-    players.push(name); localStorage.setItem("players", JSON.stringify(players)); setupApp();
-  }
-  function deletePlayer(i) { players.splice(i,1); localStorage.setItem("players", JSON.stringify(players)); setupApp(); }
-  function addNewDoc() {
-    const name = document.getElementById("newDocName").value;
-    const url = document.getElementById("newDocURL").value;
-    if (!name || !url) return;
-    docs.push({ name, url }); localStorage.setItem("docs", JSON.stringify(docs)); setupApp();
-  }
-  function deleteDoc(i) { docs.splice(i,1); localStorage.setItem("docs", JSON.stringify(docs)); setupApp(); }
-  function addNewEvent() {
-    const text = document.getElementById("newEventText").value;
-    const date = document.getElementById("newEventDate").value;
-    if (!text || !date) return;
-    events.push({ text, date }); localStorage.setItem("events", JSON.stringify(events)); setupApp();
-  }
-  function deleteEvent(i) { events.splice(i,1); localStorage.setItem("events", JSON.stringify(events)); setupApp(); }
+  const newRef = push(ref(db, "penalties"));
+  set(newRef, { name, amount })
+    .then(() => {
+      document.getElementById("newPenaltyName").value = "";
+      document.getElementById("newPenaltyAmount").value = "";
+    })
+    .catch((error) => {
+      console.error("Fehler beim Speichern der Strafe:", error);
+    });
+}
+function deletePenalty(id) {
+  const penRef = ref(db, "penalties/" + id);
+  remove(penRef).catch((error) => {
+    console.error("Fehler beim Löschen:", error);
+  });
+}
 
-  window.onload = () => {
-    const savedRole = sessionStorage.getItem("role");
-    if (savedRole) {
-      userRole = savedRole;
-      switchPage(userRole === ROLE_ADMIN ? "adminPanel" : "home");
-      setupApp();
-    } else {
-      switchPage("login");
-    }
-  };
+
+function addNewPlayer() {
+  const name = document.getElementById("newPlayer").value;
+  if (!name) return;
+
+  const playerRef = push(ref(db, "players"));  // Neue ID in "players/"
+  set(playerRef, name).then(() => {
+    document.getElementById("newPlayer").value = "";
+    alert("Spieler hinzugefügt!");
+  }).catch((error) => {
+    console.error("Fehler beim Hinzufügen des Spielers:", error);
+  });
+}
+
+function deletePlayer(id) {
+  const playerRef = ref(db, "players/" + id);
+  remove(playerRef).then(() => {
+    alert("Spieler gelöscht!");
+  }).catch((error) => {
+    console.error("Fehler beim Löschen des Spielers:", error);
+  });
+}
+
+function addNewDoc() {
+  const name = document.getElementById("newDocName").value;
+  const url = document.getElementById("newDocURL").value;
+  if (!name || !url) return;
+
+  const newDocKey = push(docsRef).key;
+  set(ref(db, `documents/${newDocKey}`), {
+    name: name,
+    url: url,
+    timestamp: Date.now()
+  });
+
+  document.getElementById("newDocName").value = "";
+  document.getElementById("newDocURL").value = "";
+}
+
+function deleteDoc(key) {
+  remove(ref(db, `documents/${key}`));
+}
+
+function addNewEvent() {
+  const text = document.getElementById("newEventText").value;
+  const date = document.getElementById("newEventDate").value;
+  if (!text || !date) return;
+
+ const eventRef = ref(db, 'events');
+ const newEventKey = push(eventRef).key;
+  set(ref(db, `events/${newEventKey}`), {
+    text: text,
+    date: date,
+    timestamp: Date.now()
+  });
+
+  // Felder leeren
+  document.getElementById("newEventText").value = "";
+  document.getElementById("newEventDate").value = "";
+}
+
+function deleteEvent(key) {
+  remove(ref(db, `events/${key}`));
+}
+
+  
 </script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+  import { getDatabase, ref, set, get, onValue, push, remove } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAb5J0yQMnNvSOtqfWvqFaaoVBjRRZxUaA",
+    authDomain: "tsv-app-54006.firebaseapp.com",
+    projectId: "tsv-app-54006",
+    storageBucket: "tsv-app-54006.firebasestorage.app",
+    messagingSenderId: "694629601085",
+    appId: "1:694629601085:web:4d40166a2d5445e3113f54",
+    databaseURL: "https://tsv-app-54006-default-rtdb.europe-west1.firebasedatabase.app"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  
+  const playersRef = ref(db, "players");
+  const eventRef = ref(db, "events");
+  const docsRef = ref(db, "documents");
+
+
+
+  // Globale Referenz verfügbar machen
+  window.db = db;
+  window.ref = ref;
+  window.set = set;
+  window.get = get;
+  window.onValue = onValue;
+  window.push = push;
+  window.remove = remove;
+
+function showPlayerDetails(playerName) {
+  document.getElementById("detailPlayerName").textContent = playerName;
+  document.querySelectorAll("section").forEach(s => s.style.display = "none");
+  document.getElementById("playerDetails").style.display = "block";
+
+  const ul = document.getElementById("playerPenaltyDetails");
+  ul.innerHTML = "";
+
+  const playerRef = ref(db, `playerPenalties/${playerName}`);
+  onValue(playerRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      ul.innerHTML = "<li>Keine Strafen gefunden</li>";
+      return;
+    }
+
+    Object.values(data).forEach(p => {
+      ul.innerHTML += `<li>${p.name} – ${p.amount.toFixed(2)} € – ${new Date(p.timestamp).toLocaleString()}</li>`;
+    });
+  });
+}
+
+
+</script>
+<section id="playerDetails" style="display:none">
+  <h2>🔍 Einzelne Strafen für <span id="detailPlayerName"></span></h2>
+  <ul id="playerPenaltyDetails"></ul>
+  <button onclick="switchPage('home')">🔙 Zurück</button>
+</section>
+
+<footer style="text-align: center; padding: 20px;">
+  <button onclick="logout()" style="padding: 10px 20px; font-size: 16px;">🔐 Zurück zur Anmeldung</button>
+</footer>
+
 </body>
 </html>
