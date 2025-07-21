@@ -387,8 +387,10 @@ function updatePlayerSelect() {
   if (!ps || !players) return;
 
   ps.innerHTML = "";
-  Object.keys(players).forEach(p => {
-    ps.innerHTML += `<option value="${p}">${p}</option>`;
+
+  Object.values(players).forEach(player => {
+    const name = typeof player === 'string' ? player : player.name;
+    ps.innerHTML += `<option value="${name}">${name}</option>`;
   });
 }
 
