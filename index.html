@@ -350,21 +350,23 @@ function logout() {
     document.getElementById("penaltyEntry").style.display = (userRole === "editor" || userRole === "admin") ? "block" : "none";
   }
 
-  function updateSelects() {
-    const ps = document.getElementById("playerSelect");
+function updateSelects() {
+  const ps = document.getElementById("playerSelect");
+  const pe = document.getElementById("penaltySelect");
+
+  if (!ps || !pe || !players || !penalties) return;
+
   ps.innerHTML = "";
-  players.forEach(p => {
-    ps.innerHTML += `<option value="${p}">${p}</option>`;
+  players.forEach(player => {
+    ps.innerHTML += `<option value="${player.id}">${player.name}</option>`;
+  });
+
+  pe.innerHTML = "";
+  penalties.forEach((penalty, i) => {
+    pe.innerHTML += `<option value="${i}">${penalty.name} (${penalty.amount} €)</option>`;
   });
 }
-    const pe = document.getElementById("penaltySelect");
-    ps.innerHTML = ""; pe.innerHTML = "";
-    players.forEach(p => {
-      ps.innerHTML += `<option value="${p}">${p}</option>`;
-    });
-    penalties.forEach((p, i) => {
-      pe.innerHTML += `<option value="${i}">${p.name} (${p.amount} €)</option>`;
-    });
+
 
 
 function addPenalty() {
