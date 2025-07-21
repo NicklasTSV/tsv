@@ -204,22 +204,26 @@
 
 let penalties = []; // z. B. [{id: "...", name: "...", amount: 5}]
 
-function loadPenaltiesFromFirebase() {
-  const penRef = ref(db, "penalties");
-  onValue(penRef, (snapshot) => {
+let playerPenalties = {};
+
+function loadPenaltyCatalog() {
+  const refCatalog = ref(db, "penaltyCatalog");
+  onValue(refCatalog, (snapshot) => {
     const data = snapshot.val();
-    if (data) {
-      penalties = Object.entries(data).map(([id, obj]) => ({
-        id,
-        name: obj.name,
-        amount: obj.amount
-      }));
-    } else {
-      penalties = [];
-    }
-    updateSelects();
-    updatePenaltyList();
+    penalties = data
+      ? Object.entries(data).map(([id, p]) => ({ id, name: p.name, amount: p.amount }))
+      : [];
+    updateSelects(); 
+    updatePenaltyList(); 
     updateAdminPanel();
+  });
+}
+
+function loadPlayerPenalties() {
+  const refPenalties = ref(db, "penalties");
+  onValue(refPenalties, (snapshot) => {
+    playerPenalties = snapshot.val() || {};
+    updateSummary();
   });
 }
 
@@ -343,7 +347,8 @@ function logout() {
   updateSummary();
   updatePlayerSelect(); //neu 
   updatePenaltySelect(); //neu
-  loadPenaltiesFromFirebase();
+  loadPenaltyCatalog();
+  loadPlayerPenalties();
   loadEventsFromFirebase();
   loadDocsFromFirebase();
   updateAdminPanel();
