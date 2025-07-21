@@ -387,10 +387,8 @@ function updatePlayerSelect() {
   if (!ps || !players) return;
 
   ps.innerHTML = "";
-
-  Object.values(players).forEach(player => {
-    const name = typeof player === 'string' ? player : player.name;
-    ps.innerHTML += `<option value="${name}">${name}</option>`;
+  players.forEach(p => {
+    ps.innerHTML += `<option value="${p.id}">${p.name}</option>`;
   });
 }
 
