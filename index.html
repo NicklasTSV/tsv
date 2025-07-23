@@ -392,6 +392,8 @@ function addPenalty() {
     name: penalty.name,
     amount: penalty.amount,
     timestamp: new Date().toISOString()
+      .then(() => {
+    updateSummary(); // 🟢 Tabelle aktualisieren
   });
 }
 
@@ -415,18 +417,17 @@ function updatePenaltySelect() {
   });
 }
 
+import { get } from "firebase/database"; // Nur nötig, falls du nicht bereits `get` importierst
+
 function updateSummary() {
   const tb = document.getElementById("summaryTable");
   tb.innerHTML = "";
 
-  const allPenaltiesRef = ref(db, "playerPenalties");
-  onValue(allPenaltiesRef, (snapshot) => {
+  get(ref(db, "playerPenalties")).then((snapshot) => {
     const data = snapshot.val() || {};
 
-    tb.innerHTML = ""; // Tabelle leeren vor dem Neuaufbau
-
     players.forEach(player => {
-      const playerData = data[player.id]; // WICHTIG: Nutze player.id statt player.name
+      const playerData = data[player.id];
       let sum = 0;
 
       if (playerData) {
@@ -445,7 +446,6 @@ function updateSummary() {
     });
   });
 }
-
 
 function updatePenaltyList() {
   const ul = document.getElementById("penaltyList");
@@ -652,19 +652,35 @@ function showPlayerDetails(playerId) {
   const playerRef = ref(db, `playerPenalties/${playerId}`);
   onValue(playerRef, (snapshot) => {
     const data = snapshot.val();
-    ul.innerHTML = "";
-
     if (!data) {
       ul.innerHTML = "<li>Keine Strafen gefunden</li>";
       return;
     }
 
-    Object.values(data).forEach(p => {
-      ul.innerHTML += `<li>${p.name} – ${p.amount.toFixed(2)} € – ${new Date(p.timestamp).toLocaleString()}</li>`;
+    Object.entries(data).forEach(([key, p]) => {
+      const date = p.timestamp ? new Date(p.timestamp).toLocaleString() : "";
+      const deleteBtn = (userRole === "admin")
+        ? ` <button onclick="deletePlayerPenalty('${playerId}', '${key}')">🗑️</button>`
+        : "";
+
+      ul.innerHTML += `<li>${p.name} – ${p.amount.toFixed(2)} € – ${date}${deleteBtn}</li>`;
     });
   });
 }
 
+function deletePlayerPenalty(playerId, penaltyKey) {
+  if (!confirm("Möchtest du diese Strafe wirklich löschen?")) return;
+
+  const penaltyRef = ref(db, `playerPenalties/${playerId}/${penaltyKey}`);
+  remove(penaltyRef)
+    .then(() => {
+      alert("Strafe gelöscht.");
+      updateSummary(); // 🟢 Strafenübersicht neu berechnen
+    })
+    .catch((error) => {
+      console.error("Fehler beim Löschen der Strafe:", error);
+    });
+}
 
 </script>
 <section id="playerDetails" style="display:none">
