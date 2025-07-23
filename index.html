@@ -335,23 +335,23 @@ function loadEventsFromFirebase() {
   let events = JSON.parse(localStorage.getItem("events")) || [];
 
   function switchPage(id) {
-   //Zugriff
-   const role = sessionStorage.getItem("role");
+  const role = sessionStorage.getItem("role");
 
-    if (!role && id !== "login") {
-      alert("Bitte zuerst PIN eingeben.");
-      id = "login";
-    }
-
-    //Alle Seiten ausblenden
-    document.querySelectorAll("section").forEach(s => s.style.display = "none");
-
-    //gewählte Seite anzeigen
-    const target = document.getElementById(id);
-    if (target) {
-      target.style.display = "block";
-    }
+  // Zugriffsschutz: Nur zur Login-Seite, wenn nicht eingeloggt
+  if (!role && id !== "login") {
+    alert("Bitte zuerst PIN eingeben.");
+    return switchPage("login");
   }
+
+  // Alle Seiten ausblenden
+  document.querySelectorAll("section").forEach(s => s.style.display = "none");
+
+  // Gewünschte Seite anzeigen
+  const target = document.getElementById(id);
+  if (target) {
+    target.style.display = "block";
+  }
+}
   
 function checkPIN() {
   const pin = document.getElementById("pinInput").value;
