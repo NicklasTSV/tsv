@@ -142,6 +142,10 @@
 
 <script>
 
+window.onerror = function(message, source, lineno, colno, error) {
+  alert("Fehler: " + message + "\nZeile: " + lineno);
+}; // gleich löschen!
+
   // Session-Login-Zustände
   const ROLE_VIEWER = "viewer";
   const ROLE_EDITOR = "editor";
