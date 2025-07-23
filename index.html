@@ -65,38 +65,7 @@
       text-decoration: underline;
     }
   </style>
-  <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-  import { getDatabase, ref, set, get, onValue, push, remove } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyAb5J0yQMnNvSOtqfWvqFaaoVBjRRZxUaA",
-    authDomain: "tsv-app-54006.firebaseapp.com",
-    projectId: "tsv-app-54006",
-    storageBucket: "tsv-app-54006.firebasestorage.app",
-    messagingSenderId: "694629601085",
-    appId: "1:694629601085:web:4d40166a2d5445e3113f54",
-    databaseURL: "https://tsv-app-54006-default-rtdb.europe-west1.firebasedatabase.app"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  
-  const playersRef = ref(db, "players");
-  const eventRef = ref(db, "events");
-  const docsRef = ref(db, "documents");
-
-
-
-  // Globale Referenz verfügbar machen
-  window.db = db;
-  window.ref = ref;
-  window.set = set;
-  window.get = get;
-  window.onValue = onValue;
-  window.push = push;
-  window.remove = remove;
-   </script>
+ 
   
 </head>
 <body>
@@ -683,6 +652,39 @@ function deletePlayerPenalty(playerId, penaltyKey) {
 }
 
 </script>
+
+ <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+  import { getDatabase, ref, set, get, onValue, push, remove } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAb5J0yQMnNvSOtqfWvqFaaoVBjRRZxUaA",
+    authDomain: "tsv-app-54006.firebaseapp.com",
+    projectId: "tsv-app-54006",
+    storageBucket: "tsv-app-54006.firebasestorage.app",
+    messagingSenderId: "694629601085",
+    appId: "1:694629601085:web:4d40166a2d5445e3113f54",
+    databaseURL: "https://tsv-app-54006-default-rtdb.europe-west1.firebasedatabase.app"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  
+  const playersRef = ref(db, "players");
+  const eventRef = ref(db, "events");
+  const docsRef = ref(db, "documents");
+
+
+
+  // Globale Referenz verfügbar machen
+  window.db = db;
+  window.ref = ref;
+  window.set = set;
+  window.get = get;
+  window.onValue = onValue;
+  window.push = push;
+  window.remove = remove;
+   </script>
 
 <section id="playerDetails" style="display:none">
   <h2>🔍 Einzelne Strafen für <span id="detailPlayerName"></span></h2>
