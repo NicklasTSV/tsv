@@ -528,8 +528,8 @@ function addNewPlayer() {
   const name = document.getElementById("newPlayer").value;
   if (!name) return;
 
-  const playerRef = push(ref(db, "players"));  // Neue ID erzeugen
-  set(playerRef, { name }).then(() => {
+  const playerRef = push(ref(db, "players"));  // Neue ID in "players/"
+  set(playerRef, name).then(() => {
     document.getElementById("newPlayer").value = "";
     alert("Spieler hinzugefügt!");
   }).catch((error) => {
