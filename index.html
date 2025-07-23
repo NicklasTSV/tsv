@@ -320,27 +320,28 @@ function loadEventsFromFirebase() {
     }
   }
   
+function checkPIN() {
+  const pin = document.getElementById("pinInput").value;
 
-  function checkPIN() {
-    const pin = document.getElementById("pinInput").value;
-    loginWithPIN(pin);
+  if (pin === BASIC_PIN) {
+    sessionStorage.setItem("role", "viewer");
+    userRole = "viewer";
+    switchPage("home");
+  } else if (pin === POWER_PIN) {
+    sessionStorage.setItem("role", "editor");
+    userRole = "editor";
+    switchPage("home");
+  } else if (pin === ADMIN_PIN) {
+    sessionStorage.setItem("role", "admin");
+    userRole = "admin";
+    switchPage("adminPanel");
+  } else {
+    alert("Falsche PIN!");
     return;
-    if (pin === BASIC_PIN) {
-      userRole = "viewer";
-      switchPage('home');
-      setupApp();
-    } else if (pin === POWER_PIN) {
-      userRole = "editor";
-      switchPage('home');
-      setupApp();
-    } else if (pin === ADMIN_PIN) {
-      userRole = "admin";
-      switchPage('adminPanel');
-      setupApp();
-    } else {
-      alert("Falsche PIN");
-    }
   }
+
+  setupApp(); // App-Daten laden, Rollen-Funktionen aktivieren
+}
 
 function logout() {
   sessionStorage.clear(); // Login-Status löschen
