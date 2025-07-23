@@ -207,14 +207,20 @@ let penalties = []; // z. B. [{id: "...", name: "...", amount: 5}]
 let playerPenalties = {};
 
 function loadPenaltyCatalog() {
-  const refCatalog = ref(db, "penaltyCatalog");
+  const refCatalog = ref(db, "penalties"); // Korrigierter Pfad!
+
   onValue(refCatalog, (snapshot) => {
     const data = snapshot.val();
     penalties = data
-      ? Object.entries(data).map(([id, p]) => ({ id, name: p.name, amount: p.amount }))
+      ? Object.entries(data).map(([id, p]) => ({
+          id,
+          name: p.name,
+          amount: p.amount
+        }))
       : [];
-    updateSelects(); 
-    updatePenaltyList(); 
+
+    updateSelects();
+    updatePenaltyList();
     updateAdminPanel();
   });
 }
