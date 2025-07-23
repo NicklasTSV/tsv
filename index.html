@@ -393,7 +393,7 @@ function addPenalty() {
     name: penalty.name,
     amount: penalty.amount,
     timestamp: new Date().toISOString()
-      .then(() => {
+      }).then(() => {
     updateSummary(); // 🟢 Tabelle aktualisieren
   });
 }
