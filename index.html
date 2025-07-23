@@ -379,8 +379,6 @@ function updateSelects() {
   });
 }
 
-
-
 function addPenalty() {
   const player = document.getElementById("playerSelect").value;
   const penaltyIndex = parseInt(document.getElementById("penaltySelect").value);
@@ -393,8 +391,10 @@ function addPenalty() {
     name: penalty.name,
     amount: penalty.amount,
     timestamp: new Date().toISOString()
-      }).then(() => {
-    updateSummary(); // 🟢 Tabelle aktualisieren
+  }).then(() => {
+    updateSummary(); // ✅ Jetzt korrekt!
+  }).catch((error) => {
+    console.error("Fehler beim Hinzufügen der Strafe:", error);
   });
 }
 
