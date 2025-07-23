@@ -419,19 +419,29 @@ function updateSummary() {
   const tb = document.getElementById("summaryTable");
   tb.innerHTML = "";
 
-  players.forEach(player => {
-    const playerRef = ref(db, `playerPenalties/${player.name}`);
-    onValue(playerRef, (snapshot) => {
-      const data = snapshot.val();
+  const allPenaltiesRef = ref(db, "playerPenalties");
+  onValue(allPenaltiesRef, (snapshot) => {
+    const data = snapshot.val() || {};
+
+    tb.innerHTML = ""; // Tabelle leeren vor dem Neuaufbau
+
+    players.forEach(player => {
+      const playerData = data[player.id]; // WICHTIG: Nutze player.id statt player.name
       let sum = 0;
-      if (data) {
-        Object.values(data).forEach(p => sum += p.amount);
+
+      if (playerData) {
+        Object.values(playerData).forEach(p => {
+          if (typeof p.amount === "number") {
+            sum += p.amount;
+          }
+        });
       }
 
-      tb.innerHTML += `<tr>
-        <td class="clickable" onclick="showPlayerDetails('${player.name}')">${player.name}</td>
-        <td>${sum.toFixed(2)} €</td>
-      </tr>`;
+      tb.innerHTML += `
+        <tr>
+          <td class="clickable" onclick="showPlayerDetails('${player.id}')">${player.name}</td>
+          <td>${sum.toFixed(2)} €</td>
+        </tr>`;
     });
   });
 }
@@ -628,17 +638,22 @@ function deleteEvent(key) {
   window.push = push;
   window.remove = remove;
 
-function showPlayerDetails(playerName) {
-  document.getElementById("detailPlayerName").textContent = playerName;
+function showPlayerDetails(playerId) {
+  const player = players.find(p => p.id === playerId);
+  if (!player) return;
+
+  document.getElementById("detailPlayerName").textContent = player.name;
   document.querySelectorAll("section").forEach(s => s.style.display = "none");
   document.getElementById("playerDetails").style.display = "block";
 
   const ul = document.getElementById("playerPenaltyDetails");
   ul.innerHTML = "";
 
-  const playerRef = ref(db, `playerPenalties/${playerName}`);
+  const playerRef = ref(db, `playerPenalties/${playerId}`);
   onValue(playerRef, (snapshot) => {
     const data = snapshot.val();
+    ul.innerHTML = "";
+
     if (!data) {
       ul.innerHTML = "<li>Keine Strafen gefunden</li>";
       return;
