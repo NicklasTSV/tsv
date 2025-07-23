@@ -480,11 +480,13 @@ function updateEventList() {
   penalties.map((p) =>
     `<li>${p.name} – ${p.amount} € <button onclick="deletePenalty('${p.id}')">🗑️</button></li>`
   ).join("");
-  document.getElementById("adminPlayerList").innerHTML =
-  players.map((p) =>
-    `<li>${p.name} <button onclick="deletePlayer('${p.id}')">🗑️</button></li>`
-  ).join("");
-
+players.forEach(player => {
+  adminPlayerList.innerHTML += `
+    <li>
+      ${player.name}
+      <button onclick="deletePlayer('${player.id}')">🗑️</button>
+    </li>`;
+});
     document.getElementById("adminDocList").innerHTML =
       docs.map((d, i) => `<li>${d.name} <button onclick="deleteDoc(${i})">🗑️</button></li>`).join("");
     document.getElementById("adminEventList").innerHTML =
