@@ -475,23 +475,32 @@ function updateEventList() {
   });
 }
 
-  function updateAdminPanel() {
-    document.getElementById("adminPenaltyList").innerHTML =
-  penalties.map((p) =>
-    `<li>${p.name} – ${p.amount} € <button onclick="deletePenalty('${p.id}')">🗑️</button></li>`
-  ).join("");
-players.forEach(player => {
-  adminPlayerList.innerHTML += `
-    <li>
-      ${player.name}
-      <button onclick="deletePlayer('${player.id}')">🗑️</button>
-    </li>`;
-});
-    document.getElementById("adminDocList").innerHTML =
-      docs.map((d, i) => `<li>${d.name} <button onclick="deleteDoc(${i})">🗑️</button></li>`).join("");
-    document.getElementById("adminEventList").innerHTML =
-      events.map((e, i) => `<li>${e.date} – ${e.text} <button onclick="deleteEvent(${i})">🗑️</button></li>`).join("");
-  }
+function updateAdminPanel() {
+  const adminPlayerList = document.getElementById("adminPlayerList");
+  adminPlayerList.innerHTML = "";
+  players.forEach(player => {
+    adminPlayerList.innerHTML += `
+      <li>
+        ${player.name}
+        <button onclick="deletePlayer('${player.id}')">🗑️</button>
+      </li>`;
+  });
+
+  document.getElementById("adminPenaltyList").innerHTML =
+    penalties.map((p) =>
+      `<li>${p.name} – ${p.amount} € <button onclick="deletePenalty('${p.id}')">🗑️</button></li>`
+    ).join("");
+
+  document.getElementById("adminDocList").innerHTML =
+    docs.map((d) =>
+      `<li>${d.name} <button onclick="deleteDoc('${d.id}')">🗑️</button></li>`
+    ).join("");
+
+  document.getElementById("adminEventList").innerHTML =
+    events.map((e) =>
+      `<li>${e.date} – ${e.text} <button onclick="deleteEvent('${e.id}')">🗑️</button></li>`
+    ).join("");
+}
 
 function addNewPenalty() {
   const name = document.getElementById("newPenaltyName").value;
