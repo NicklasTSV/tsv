@@ -296,8 +296,10 @@ function loadEventsFromFirebase() {
 }
 
   let summary = JSON.parse(localStorage.getItem("summary")) || {};
-  let docs = JSON.parse(localStorage.getItem("docs")) || [];
-  let events = JSON.parse(localStorage.getItem("events")) || [];
+  
+  // nicht mehr benötigt: let docs = JSON.parse(localStorage.getItem("docs")) || [];
+  // nicht mehr benötigt: let events = JSON.parse(localStorage.getItem("events")) || [];
+
 
   function switchPage(id) {
   const role = sessionStorage.getItem("role");
@@ -494,6 +496,9 @@ function updateEventList() {
 
 function updateAdminPanel() {
   const adminPlayerList = document.getElementById("adminPlayerList");
+  const adminPenaltyList = document.getElementById("adminPenaltyList");
+
+  // 🟩 Spieler aktualisieren
   adminPlayerList.innerHTML = "";
   players.forEach(player => {
     adminPlayerList.innerHTML += `
@@ -503,20 +508,13 @@ function updateAdminPanel() {
       </li>`;
   });
 
-  document.getElementById("adminPenaltyList").innerHTML =
-    penalties.map((p) =>
-      `<li>${p.name} – ${p.amount} € <button onclick="deletePenalty('${p.id}')">🗑️</button></li>`
-    ).join("");
+  // 🟩 Strafen aktualisieren
+  adminPenaltyList.innerHTML = penalties.map((p) =>
+    `<li>${p.name} – ${p.amount.toFixed(2)} € <button onclick="deletePenalty('${p.id}')">🗑️</button></li>`
+  ).join("");
 
-  document.getElementById("adminDocList").innerHTML =
-    docs.map((d) =>
-      `<li>${d.name} <button onclick="deleteDoc('${d.id}')">🗑️</button></li>`
-    ).join("");
-
-  document.getElementById("adminEventList").innerHTML =
-    events.map((e) =>
-      `<li>${e.date} – ${e.text} <button onclick="deleteEvent('${e.id}')">🗑️</button></li>`
-    ).join("");
+  // ❌ Dokumente und Events werden NICHT mehr hier aufgebaut!
+  // Stattdessen erfolgt ihre Darstellung durch loadDocsFromFirebase() & loadEventsFromFirebase()
 }
 
 function addNewPenalty() {
