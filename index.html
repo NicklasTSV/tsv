@@ -619,7 +619,7 @@ function showPlayerDetails(playerId) {
 
   const playerRef = ref(db, `playerPenalties/${playerId}`);
 
-  // Statt onValue → nur einmalige Abfrage:
+  // Statt onValue → nur einmalige Abfrage (verhindert doppelte Einträge)
   get(playerRef).then((snapshot) => {
     const data = snapshot.val();
     if (!data) {
@@ -629,7 +629,7 @@ function showPlayerDetails(playerId) {
 
     Object.entries(data).forEach(([key, p]) => {
       const date = p.timestamp ? new Date(p.timestamp).toLocaleString() : "";
-      const deleteBtn = (userRole === "admin")
+      const deleteBtn = (userRole === "admin" || userRole === "editor") // ➜ Editor darf auch löschen
         ? ` <button onclick="deletePlayerPenalty('${playerId}', '${key}')">🗑️</button>`
         : "";
 
