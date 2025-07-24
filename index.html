@@ -144,6 +144,9 @@
 <input id="trainingDate" type="date" />
 <button onclick="addTrainingDate()">Trainingstag hinzufügen</button>
 <div id="trainingList"></div>
+
+<h3>📋 Trainingsanwesenheit</h3>
+<div id="trainingOverview"></div>
   </div>
 </section>
 
@@ -366,7 +369,10 @@ function setupApp() {
     loadTrainings(); // ⬅️ NEU für Trainingsdaten
   updateAdminPanel();
     document.getElementById("penaltyEntry").style.display = (userRole === "editor" || userRole === "admin") ? "block" : "none";
-  }
+ if (userRole === "admin") {
+  loadTrainingData(); // ✅ Nur Admins sehen die Trainingsübersicht
+   }
+}
 
 function updateSelects() {
   const ps = document.getElementById("playerSelect");
@@ -633,6 +639,60 @@ function loadTrainings() {
       container.innerHTML += html;
     });
   });
+}
+
+function loadTrainingData() {
+  const container = document.getElementById("trainingOverview");
+  container.innerHTML = "";
+
+  const trainingRef = ref(db, "training");
+  get(trainingRef).then((snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      container.innerHTML = "<p>Keine Trainings gefunden.</p>";
+      return;
+    }
+
+    Object.entries(data).forEach(([trainingId, training]) => {
+      const trainingDate = training.date || "Unbekanntes Datum";
+      const playerStates = training.players || {};
+
+      let html = `<h4>📅 ${trainingDate}</h4><table><tr><th>Spieler</th><th>Status</th></tr>`;
+
+      players.forEach(player => {
+        const status = playerStates[player.id] || "";
+        html += `
+          <tr>
+            <td>${player.name}</td>
+            <td>
+              <select onchange="updatePlayerTrainingStatus('${trainingId}', '${player.id}', this.value)">
+                <option value="">–</option>
+                <option value="anwesend" ${status === "anwesend" ? "selected" : ""}>Anwesend</option>
+                <option value="entschuldigt" ${status === "entschuldigt" ? "selected" : ""}>Entschuldigt</option>
+                <option value="unentschuldigt" ${status === "unentschuldigt" ? "selected" : ""}>Unentschuldigt</option>
+              </select>
+            </td>
+          </tr>`;
+      });
+
+      html += "</table><hr>";
+      container.innerHTML += html;
+    });
+  }).catch((error) => {
+    console.error("Fehler beim Laden der Trainingsdaten:", error);
+    container.innerHTML = "<p>Fehler beim Laden der Trainingsdaten.</p>";
+  });
+}
+
+function updatePlayerTrainingStatus(trainingId, playerId, status) {
+  const playerRef = ref(db, `training/${trainingId}/players/${playerId}`);
+  set(playerRef, status)
+    .then(() => {
+      console.log(`Status aktualisiert für Spieler ${playerId} im Training ${trainingId}`);
+    })
+    .catch((error) => {
+      console.error("Fehler beim Speichern des Status:", error);
+    });
 }
 
 let currentDetailRef = null;
