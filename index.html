@@ -349,7 +349,9 @@ function logout() {
   switchPage("login");    // zurück zur Login-Seite
 }
 
-  function setupApp() {
+function setupApp() {
+  userRole = sessionStorage.getItem("role");  // ✅ Rolle korrekt initialisieren
+
   loadPlayersFromFirebase();
   updateSelects();
   updateSummary();
@@ -360,8 +362,11 @@ function logout() {
   loadEventsFromFirebase();
   loadDocsFromFirebase();
   updateAdminPanel();
-    document.getElementById("penaltyEntry").style.display = (userRole === "editor" || userRole === "admin") ? "block" : "none";
-  }
+
+  // ✅ Zugriff auf Strafe-Eintrag korrekt steuern
+  document.getElementById("penaltyEntry").style.display =
+    (userRole === "editor" || userRole === "admin") ? "block" : "none";
+}
 
 function updateSelects() {
   const ps = document.getElementById("playerSelect");
