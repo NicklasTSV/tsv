@@ -139,6 +139,11 @@
     <input id="newEventDate" type="date" />
     <button onclick="addNewEvent()">Hinzufügen</button>
     <ul id="adminEventList"></ul>
+    
+    <h3>Training</h3>
+<input id="trainingDate" type="date" />
+<button onclick="addTrainingDate()">Trainingstag hinzufügen</button>
+<div id="trainingList"></div>
   </div>
 </section>
 
@@ -358,6 +363,7 @@ function setupApp() {
   loadPlayerPenalties();
   loadEventsFromFirebase();
   loadDocsFromFirebase();
+    loadTrainings(); // ⬅️ NEU für Trainingsdaten
   updateAdminPanel();
     document.getElementById("penaltyEntry").style.display = (userRole === "editor" || userRole === "admin") ? "block" : "none";
   }
@@ -581,6 +587,52 @@ function deleteEvent(key) {
     .catch((error) => {
       console.error("Fehler beim Löschen des Termins:", error);
     });
+}
+
+function addTrainingDate() {
+  const date = document.getElementById("trainingDate").value;
+  if (!date) return;
+
+  const trainingRef = ref(db, `trainings/${date}`);
+
+  const initialData = {};
+  players.forEach(p => {
+    initialData[p.id] = "absent";
+  });
+
+  set(trainingRef, initialData).then(() => {
+    alert("Trainingstermin angelegt.");
+    document.getElementById("trainingDate").value = "";
+    loadTrainings(); // Ansicht aktualisieren
+  }).catch((err) => {
+    console.error("Fehler beim Anlegen des Trainings:", err);
+  });
+}
+
+function loadTrainings() {
+  const container = document.getElementById("trainingList");
+  if (!container) return;
+
+  const trainingsRef = ref(db, "trainings");
+  onValue(trainingsRef, (snapshot) => {
+    const data = snapshot.val();
+    container.innerHTML = "";
+
+    if (!data) {
+      container.innerHTML = "<p>Keine Trainingsdaten vorhanden.</p>";
+      return;
+    }
+
+    Object.entries(data).forEach(([date, attendance]) => {
+      let html = `<h4>${date}</h4><ul>`;
+      players.forEach(p => {
+        const status = attendance[p.id] || "absent";
+        html += `<li>${p.name}: ${status}</li>`;
+      });
+      html += "</ul>";
+      container.innerHTML += html;
+    });
+  });
 }
 
 let currentDetailRef = null;
