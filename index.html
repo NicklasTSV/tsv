@@ -567,8 +567,8 @@ function addNewDoc() {
   const url = document.getElementById("newDocURL").value;
   if (!name || !url) return;
 
-  const newDocKey = push(ref(db, "documents")).key;
-  set(ref(db, `documents/${newDocKey}`), {
+  const newRef = push(ref(db, "documents"));
+  set(newRef, {
     name,
     url,
     timestamp: Date.now()
@@ -596,8 +596,8 @@ function addNewEvent() {
   const date = document.getElementById("newEventDate").value;
   if (!text || !date) return;
 
-  const newEventKey = push(ref(db, "events")).key;
-  set(ref(db, `events/${newEventKey}`), {
+  const newRef = push(ref(db, "events"));
+  set(newRef, {
     text,
     date,
     timestamp: Date.now()
