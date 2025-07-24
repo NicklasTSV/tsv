@@ -257,7 +257,7 @@ function loadDocsFromFirebase() {
   const ul = document.getElementById("docList");
   const adminUl = document.getElementById("adminDocList");
 
-  onValue(docsRef, (snapshot) => {
+  onValue(ref(db, "documents"), (snapshot) => {
     const data = snapshot.val() || {};
     ul.innerHTML = "";
     adminUl.innerHTML = "";
@@ -278,7 +278,7 @@ function loadEventsFromFirebase() {
   const ul = document.getElementById("eventList");
   const adminUl = document.getElementById("adminEventList");
 
-  onValue(eventRef, (snapshot) => {
+  onValue(ref(db, "events"), (snapshot) => {
     const data = snapshot.val() || {};
     ul.innerHTML = "";
     adminUl.innerHTML = "";
@@ -455,42 +455,6 @@ function updatePenaltyList() {
   ul.innerHTML = "";
   penalties.forEach(p => {
     ul.innerHTML += `<li>${p.name} – ${p.amount.toFixed(2)} €</li>`;
-  });
-}
-
-function updateEventList() {
-  const ul = document.getElementById("eventList");
-  onValue(eventRef, (snapshot) => {
-    const data = snapshot.val();
-    ul.innerHTML = "";
-
-    if (data) {
-      Object.entries(data).forEach(([key, e]) => {
-        const deleteButton = (userRole === "admin")
-          ? `<button onclick="deleteEvent('${key}')">🗑️</button>`
-          : "";
-
-        ul.innerHTML += `<li>📅 ${e.date} – ${e.text} ${deleteButton}</li>`;
-      });
-    }
-  });
-}
-
-  function updateDocList() {
-  const ul = document.getElementById("docList");
-  onValue(docsRef, (snapshot) => {
-    const data = snapshot.val();
-    ul.innerHTML = "";
-
-    if (data) {
-      Object.entries(data).forEach(([key, doc]) => {
-        const deleteButton = (userRole === "admin")
-          ? `<button onclick="deleteDoc('${key}')">🗑️</button>`
-          : "";
-
-        ul.innerHTML += `<li><a href="${doc.url}" target="_blank">${doc.name}</a> ${deleteButton}</li>`;
-      });
-    }
   });
 }
 
