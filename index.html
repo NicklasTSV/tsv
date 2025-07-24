@@ -568,46 +568,62 @@ function deletePlayer(id) {
   });
 }
 
+// 📄 Dokument hinzufügen
 function addNewDoc() {
   const name = document.getElementById("newDocName").value;
   const url = document.getElementById("newDocURL").value;
   if (!name || !url) return;
 
-  const newDocKey = push(docsRef).key;
+  const newDocKey = push(ref(db, "documents")).key;
   set(ref(db, `documents/${newDocKey}`), {
-    name: name,
-    url: url,
+    name,
+    url,
     timestamp: Date.now()
+  }).then(() => {
+    document.getElementById("newDocName").value = "";
+    document.getElementById("newDocURL").value = "";
+    loadDocsFromFirebase(); // ✅ Liste aktualisieren
+  }).catch((error) => {
+    console.error("Fehler beim Speichern des Dokuments:", error);
   });
-
-  document.getElementById("newDocName").value = "";
-  document.getElementById("newDocURL").value = "";
 }
 
+// 📄 Dokument löschen
 function deleteDoc(key) {
-  remove(ref(db, `documents/${key}`));
+  remove(ref(db, `documents/${key}`))
+    .then(() => loadDocsFromFirebase())
+    .catch((error) => {
+      console.error("Fehler beim Löschen des Dokuments:", error);
+    });
 }
 
+// 📅 Termin hinzufügen
 function addNewEvent() {
   const text = document.getElementById("newEventText").value;
   const date = document.getElementById("newEventDate").value;
   if (!text || !date) return;
 
- const eventRef = ref(db, 'events');
- const newEventKey = push(eventRef).key;
+  const newEventKey = push(ref(db, "events")).key;
   set(ref(db, `events/${newEventKey}`), {
-    text: text,
-    date: date,
+    text,
+    date,
     timestamp: Date.now()
+  }).then(() => {
+    document.getElementById("newEventText").value = "";
+    document.getElementById("newEventDate").value = "";
+    loadEventsFromFirebase(); // ✅ Liste aktualisieren
+  }).catch((error) => {
+    console.error("Fehler beim Hinzufügen des Termins:", error);
   });
-
-  // Felder leeren
-  document.getElementById("newEventText").value = "";
-  document.getElementById("newEventDate").value = "";
 }
 
+// 📅 Termin löschen
 function deleteEvent(key) {
-  remove(ref(db, `events/${key}`));
+  remove(ref(db, `events/${key}`))
+    .then(() => loadEventsFromFirebase())
+    .catch((error) => {
+      console.error("Fehler beim Löschen des Termins:", error);
+    });
 }
 
 let currentDetailRef = null;
