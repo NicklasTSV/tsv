@@ -605,6 +605,8 @@ function deleteEvent(key) {
   remove(ref(db, `events/${key}`));
 }
 
+let currentDetailRef = null;
+
 function showPlayerDetails(playerId) {
   const player = players.find(p => p.id === playerId);
   if (!player) return;
@@ -614,19 +616,19 @@ function showPlayerDetails(playerId) {
   document.getElementById("playerDetails").style.display = "block";
 
   const ul = document.getElementById("playerPenaltyDetails");
-  ul.innerHTML = "";
 
-  // ❗ Vorherigen Listener entfernen
+  // ❗ vorherigen Listener entfernen, falls vorhanden
   if (currentDetailRef) {
-    off(currentDetailRef);
+    off(currentDetailRef); // Wichtig!
   }
 
   const playerRef = ref(db, `playerPenalties/${playerId}`);
   currentDetailRef = playerRef;
 
+  // Setze neuen Listener
   onValue(playerRef, (snapshot) => {
     const data = snapshot.val();
-    ul.innerHTML = ""; // WICHTIG: erst hier leeren, sonst flackert es vorher
+    ul.innerHTML = ""; // erst hier leeren!
 
     if (!data) {
       ul.innerHTML = "<li>Keine Strafen gefunden</li>";
