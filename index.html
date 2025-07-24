@@ -369,12 +369,10 @@ function setupApp() {
     loadTrainings(); // ⬅️ NEU für Trainingsdaten
   updateAdminPanel();
     document.getElementById("penaltyEntry").style.display = (userRole === "editor" || userRole === "admin") ? "block" : "none";
- if (userRole === "admin") {
-  loadTrainingData(); // ✅ Nur Admins sehen die Trainingsübersicht
-   }
-  if (userRole === "admin") {
-  calculateAttendanceStats();
-}
+if (userRole === "admin") {
+  loadTrainings();
+  loadTrainingData();
+  }
 }
 
 function calculateAttendanceStats() {
@@ -641,40 +639,47 @@ function addTrainingDate() {
   const date = document.getElementById("trainingDate").value;
   if (!date) return;
 
-  const trainingRef = ref(db, `trainings/${date}`);
+  const newKey = push(ref(db, "trainings")).key;
 
-  const initialData = {};
+  const playersStatus = {};
   players.forEach(p => {
-    initialData[p.id] = "absent";
+    playersStatus[p.id] = "absent"; // Standardstatus
   });
 
-  set(trainingRef, initialData).then(() => {
-    alert("Trainingstermin angelegt.");
+  const trainingObj = {
+    date: date,
+    players: playersStatus
+  };
+
+  set(ref(db, `trainings/${newKey}`), trainingObj).then(() => {
+    alert("Trainingstermin gespeichert.");
     document.getElementById("trainingDate").value = "";
-    loadTrainings(); // Ansicht aktualisieren
-  }).catch((err) => {
-    console.error("Fehler beim Anlegen des Trainings:", err);
+    loadTrainings();
+    loadTrainingData(); // auch aktualisieren
+  }).catch((error) => {
+    console.error("Fehler beim Speichern des Trainings:", error);
   });
 }
 
 function loadTrainings() {
   const container = document.getElementById("trainingList");
-  if (!container) return;
+  container.innerHTML = "";
 
   const trainingsRef = ref(db, "trainings");
   onValue(trainingsRef, (snapshot) => {
     const data = snapshot.val();
-    container.innerHTML = "";
-
     if (!data) {
       container.innerHTML = "<p>Keine Trainingsdaten vorhanden.</p>";
       return;
     }
 
-    Object.entries(data).forEach(([date, attendance]) => {
+    Object.entries(data).forEach(([id, training]) => {
+      const date = training.date || id;
+      const playersData = training.players || {};
+
       let html = `<h4>${date}</h4><ul>`;
       players.forEach(p => {
-        const status = attendance[p.id] || "absent";
+        const status = playersData[p.id] || "absent";
         html += `<li>${p.name}: ${status}</li>`;
       });
       html += "</ul>";
@@ -687,7 +692,7 @@ function loadTrainingData() {
   const container = document.getElementById("trainingOverview");
   container.innerHTML = "";
 
-  const trainingRef = ref(db, "training");
+  const trainingRef = ref(db, "trainings");
   get(trainingRef).then((snapshot) => {
     const data = snapshot.val();
     if (!data) {
@@ -696,7 +701,7 @@ function loadTrainingData() {
     }
 
     Object.entries(data).forEach(([trainingId, training]) => {
-      const trainingDate = training.date || "Unbekanntes Datum";
+      const trainingDate = training.date || trainingId;
       const playerStates = training.players || {};
 
       let html = `<h4>📅 ${trainingDate}</h4><table><tr><th>Spieler</th><th>Status</th></tr>`;
@@ -727,10 +732,10 @@ function loadTrainingData() {
 }
 
 function updatePlayerTrainingStatus(trainingId, playerId, status) {
-  const playerRef = ref(db, `training/${trainingId}/players/${playerId}`);
+  const playerRef = ref(db, `trainings/${trainingId}/players/${playerId}`);
   set(playerRef, status)
     .then(() => {
-      console.log(`Status aktualisiert für Spieler ${playerId} im Training ${trainingId}`);
+      console.log(`Status aktualisiert: Spieler ${playerId}, Training ${trainingId}`);
     })
     .catch((error) => {
       console.error("Fehler beim Speichern des Status:", error);
