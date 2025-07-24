@@ -372,6 +372,48 @@ function setupApp() {
  if (userRole === "admin") {
   loadTrainingData(); // ✅ Nur Admins sehen die Trainingsübersicht
    }
+  if (userRole === "admin") {
+  calculateAttendanceStats();
+}
+}
+
+function calculateAttendanceStats() {
+  const trainingRef = ref(db, "trainings");
+
+  get(trainingRef).then((snapshot) => {
+    const data = snapshot.val() || {};
+    const totalTrainings = Object.keys(data).length;
+
+    const stats = {};
+
+    // Zähle alle Status pro Spieler
+    Object.values(data).forEach(training => {
+      if (training.players) {
+        Object.entries(training.players).forEach(([playerId, status]) => {
+          if (!stats[playerId]) {
+            stats[playerId] = { anwesend: 0, total: 0 };
+          }
+
+          stats[playerId].total++;
+          if (status === "anwesend") {
+            stats[playerId].anwesend++;
+          }
+        });
+      }
+    });
+
+    // Ausgabe vorbereiten
+    const overviewDiv = document.getElementById("trainingOverview");
+    overviewDiv.innerHTML = "<table><tr><th>Spieler</th><th>Anwesenheit</th></tr>";
+
+    players.forEach(player => {
+      const s = stats[player.id] || { anwesend: 0, total: 0 };
+      const percent = s.total > 0 ? ((s.anwesend / s.total) * 100).toFixed(1) : "–";
+      overviewDiv.innerHTML += `<tr><td>${player.name}</td><td>${percent} %</td></tr>`;
+    });
+
+    overviewDiv.innerHTML += "</table>";
+  });
 }
 
 function updateSelects() {
