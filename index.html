@@ -231,7 +231,7 @@ function loadPlayerPenalties() {
   const refPenalties = ref(db, "playerPenalties");
   get(refPenalties).then((snapshot) => {
     playerPenalties = snapshot.val() || {};
-    updateSummary();
+    
   }).catch((error) => {
     console.error("Fehler beim Laden der Strafen:", error);
   });
