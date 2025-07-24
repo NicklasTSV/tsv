@@ -616,9 +616,18 @@ function showPlayerDetails(playerId) {
   const ul = document.getElementById("playerPenaltyDetails");
   ul.innerHTML = "";
 
+  // ❗ Vorherigen Listener entfernen
+  if (currentDetailRef) {
+    off(currentDetailRef);
+  }
+
   const playerRef = ref(db, `playerPenalties/${playerId}`);
+  currentDetailRef = playerRef;
+
   onValue(playerRef, (snapshot) => {
     const data = snapshot.val();
+    ul.innerHTML = ""; // WICHTIG: erst hier leeren, sonst flackert es vorher
+
     if (!data) {
       ul.innerHTML = "<li>Keine Strafen gefunden</li>";
       return;
@@ -653,7 +662,7 @@ function deletePlayerPenalty(playerId, penaltyKey) {
 
  <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-  import { getDatabase, ref, set, get, onValue, push, remove } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+  import { getDatabase, ref, set, get, onValue, push, remove , off } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAb5J0yQMnNvSOtqfWvqFaaoVBjRRZxUaA",
