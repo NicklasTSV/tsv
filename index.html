@@ -663,25 +663,29 @@ function addTrainingDate() {
 
 function loadTrainings() {
   const container = document.getElementById("trainingList");
-  container.innerHTML = "";
+  if (!container) return;
 
   const trainingsRef = ref(db, "trainings");
   onValue(trainingsRef, (snapshot) => {
     const data = snapshot.val();
+    container.innerHTML = "";
+
     if (!data) {
       container.innerHTML = "<p>Keine Trainingsdaten vorhanden.</p>";
       return;
     }
 
-    Object.entries(data).forEach(([id, training]) => {
-      const date = training.date || id;
-      const playersData = training.players || {};
+    const sortedDates = Object.keys(data).sort().reverse(); // Neueste oben
 
-      let html = `<h4>${date}</h4><ul>`;
+    sortedDates.forEach(date => {
+      const attendance = data[date];
+      let html = `<h4>${date} <button onclick="deleteTrainingDay('${date}')">🗑️</button></h4><ul>`;
+
       players.forEach(p => {
-        const status = playersData[p.id] || "absent";
+        const status = attendance[p.id] || "absent";
         html += `<li>${p.name}: ${status}</li>`;
       });
+
       html += "</ul>";
       container.innerHTML += html;
     });
@@ -729,6 +733,20 @@ function loadTrainingData() {
     console.error("Fehler beim Laden der Trainingsdaten:", error);
     container.innerHTML = "<p>Fehler beim Laden der Trainingsdaten.</p>";
   });
+}
+
+function deleteTrainingDay(date) {
+  if (!confirm(`Training am ${date} wirklich löschen?`)) return;
+
+  const trainingRef = ref(db, `trainings/${date}`);
+  remove(trainingRef)
+    .then(() => {
+      alert("Trainingstag gelöscht.");
+      loadTrainings(); // Liste neu laden
+    })
+    .catch((error) => {
+      console.error("Fehler beim Löschen des Trainingstags:", error);
+    });
 }
 
 function updatePlayerTrainingStatus(trainingId, playerId, status) {
