@@ -381,6 +381,10 @@ function updateSelects() {
 }
 
 function addPenalty() {
+  if (userRole !== "editor" && userRole !== "admin") {
+  alert("Du hast keine Berechtigung, Strafen hinzuzufügen.");
+  return;
+}
   const player = document.getElementById("playerSelect").value;
   const penaltyIndex = parseInt(document.getElementById("penaltySelect").value);
   const penalty = penalties[penaltyIndex];
