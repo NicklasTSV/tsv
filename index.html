@@ -258,21 +258,19 @@ function loadDocsFromFirebase() {
   const adminUl = document.getElementById("adminDocList");
 
   onValue(docsRef, (snapshot) => {
-    const data = snapshot.val();
+    const data = snapshot.val() || {};
     ul.innerHTML = "";
     adminUl.innerHTML = "";
 
-    if (data) {
-      Object.entries(data).forEach(([key, doc]) => {
-        const item = `<li><a href="${doc.url}" target="_blank">${doc.name}</a>`;
-        const deleteBtn = (userRole === "admin")
-          ? ` <button onclick="deleteDoc('${key}')">🗑️</button>`
-          : "";
+    Object.entries(data).forEach(([key, doc]) => {
+      const item = `<li><a href="${doc.url}" target="_blank">${doc.name}</a>`;
+      const deleteBtn = (userRole === "admin")
+        ? ` <button onclick="deleteDoc('${key}')">🗑️</button>`
+        : "";
 
-        ul.innerHTML += `${item}${deleteBtn}</li>`;
-        adminUl.innerHTML += `${item}${deleteBtn}</li>`;
-      });
-    }
+      ul.innerHTML += `${item}${deleteBtn}</li>`;
+      adminUl.innerHTML += `${item}${deleteBtn}</li>`;
+    });
   });
 }
 
@@ -281,24 +279,21 @@ function loadEventsFromFirebase() {
   const adminUl = document.getElementById("adminEventList");
 
   onValue(eventRef, (snapshot) => {
-    const data = snapshot.val();
+    const data = snapshot.val() || {};
     ul.innerHTML = "";
     adminUl.innerHTML = "";
 
-    if (data) {
-      Object.entries(data).forEach(([key, e]) => {
-        const item = `📅 ${e.date} – ${e.text}`;
-        const deleteBtn = (userRole === "admin")
-          ? ` <button onclick="deleteEvent('${key}')">🗑️</button>`
-          : "";
+    Object.entries(data).forEach(([key, e]) => {
+      const item = `📅 ${e.date} – ${e.text}`;
+      const deleteBtn = (userRole === "admin")
+        ? ` <button onclick="deleteEvent('${key}')">🗑️</button>`
+        : "";
 
-        ul.innerHTML += `<li>${item}${deleteBtn}</li>`;
-        adminUl.innerHTML += `<li>${item}${deleteBtn}</li>`;
-      });
-    }
+      ul.innerHTML += `<li>${item}${deleteBtn}</li>`;
+      adminUl.innerHTML += `<li>${item}${deleteBtn}</li>`;
+    });
   });
 }
-
 
   let summary = JSON.parse(localStorage.getItem("summary")) || {};
   let docs = JSON.parse(localStorage.getItem("docs")) || [];
