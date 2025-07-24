@@ -247,7 +247,6 @@ function loadPlayersFromFirebase() {
       players = [];
     }
     updateSelects();
-    updateSummary();
     updateAdminPanel();
   });
 }
@@ -616,20 +615,13 @@ function showPlayerDetails(playerId) {
   document.getElementById("playerDetails").style.display = "block";
 
   const ul = document.getElementById("playerPenaltyDetails");
-
-  // ❗ vorherigen Listener entfernen, falls vorhanden
-  if (currentDetailRef) {
-    off(currentDetailRef); // Wichtig!
-  }
+  ul.innerHTML = "";
 
   const playerRef = ref(db, `playerPenalties/${playerId}`);
-  currentDetailRef = playerRef;
 
-  // Setze neuen Listener
-  onValue(playerRef, (snapshot) => {
+  // Statt onValue → nur einmalige Abfrage:
+  get(playerRef).then((snapshot) => {
     const data = snapshot.val();
-    ul.innerHTML = ""; // erst hier leeren!
-
     if (!data) {
       ul.innerHTML = "<li>Keine Strafen gefunden</li>";
       return;
@@ -643,6 +635,9 @@ function showPlayerDetails(playerId) {
 
       ul.innerHTML += `<li>${p.name} – ${p.amount.toFixed(2)} € – ${date}${deleteBtn}</li>`;
     });
+  }).catch((error) => {
+    console.error("Fehler beim Laden der Strafen:", error);
+    ul.innerHTML = "<li>Fehler beim Laden der Strafen</li>";
   });
 }
 
