@@ -694,12 +694,14 @@ function loadTrainings() {
       return;
     }
 
-    Object.entries(data).forEach(([date, attendance]) => {
+    Object.entries(data).forEach(([date, training]) => {
+      const playersData = training.players || {}; // ✅ korrekt auf trainings/<datum>/players zugreifen
+
       let html = `<h4>${date} <button onclick="deleteTraining('${date}')">🗑️</button></h4>`;
       html += `<table><tr><th>Spieler</th><th>Status</th></tr>`;
 
       players.forEach(player => {
-        const status = attendance[player.id] || ""; // ✅ Status korrekt lesen
+        const status = playersData[player.id] || "";
 
         html += `
           <tr>
