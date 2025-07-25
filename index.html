@@ -386,24 +386,54 @@ function calculateAttendanceStats() {
     const data = snapshot.val() || {};
     const stats = {};
 
-    Object.entries(data).forEach(([date, training]) => {
+    // Alle Trainings zählen
+    Object.values(data).forEach(training => {
       Object.entries(training).forEach(([playerId, status]) => {
-        if (!stats[playerId]) stats[playerId] = { total: 0, anwesend: 0 };
+        if (!stats[playerId]) {
+          stats[playerId] = { total: 0, present: 0 };
+        }
         stats[playerId].total++;
-        if (status === "anwesend") stats[playerId].anwesend++;
+        if (status === "anwesend") {
+          stats[playerId].present++;
+        }
       });
     });
 
-    const container = document.getElementById("trainingStats");
-    container.innerHTML = "<table><tr><th>Spieler</th><th>Anwesenheit</th></tr>";
+    // Prozentwerte vorbereiten
+    const playerStats = players.map(p => {
+      const s = stats[p.id] || { total: 0, present: 0 };
+      const percent = s.total > 0 ? ((s.present / s.total) * 100).toFixed(1) : "–";
+      return {
+        id: p.id,
+        name: p.name,
+        percent: percent === "–" ? -1 : parseFloat(percent)
+      };
+    });
 
-    players.forEach(p => {
-      const s = stats[p.id] || { total: 0, anwesend: 0 };
-      const percent = s.total > 0 ? ((s.anwesend / s.total) * 100).toFixed(1) + "%" : "–";
-      container.innerHTML += `<tr><td>${p.name}</td><td>${percent}</td></tr>`;
+    // Sortieren nach Prozentwerten
+    const sorted = [...playerStats].filter(p => p.percent >= 0).sort((a, b) => b.percent - a.percent);
+    const top3 = sorted.slice(0, 3).map(p => p.id);
+    const bottom3 = sorted.slice(-3).map(p => p.id);
+
+    // Tabelle anzeigen
+    const container = document.getElementById("trainingOverview");
+    container.innerHTML = "<h3>📊 Anwesenheitsstatistik</h3><table><tr><th>Spieler</th><th>Anwesenheit</th></tr>";
+
+    playerStats.forEach(p => {
+      let colorClass = "";
+      if (top3.includes(p.id)) {
+        colorClass = 'style="color: green; font-weight: bold;"';
+      } else if (bottom3.includes(p.id)) {
+        colorClass = 'style="color: red; font-weight: bold;"';
+      }
+
+      const displayPercent = p.percent >= 0 ? `${p.percent} %` : "–";
+      container.innerHTML += `<tr><td>${p.name}</td><td ${colorClass}>${displayPercent}</td></tr>`;
     });
 
     container.innerHTML += "</table>";
+  }).catch((error) => {
+    console.error("Fehler beim Berechnen der Anwesenheit:", error);
   });
 }
 
@@ -664,31 +694,32 @@ function loadTrainings() {
       return;
     }
 
-    // Sortierte Anzeige nach Datum (neueste zuerst)
-    const sortedDates = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
+    Object.entries(data).forEach(([date, attendance]) => {
+      const deleteBtn = (userRole === "admin")
+        ? `<button onclick="deleteTraining('${date}')">🗑️</button>`
+        : "";
 
-    sortedDates.forEach(date => {
-      const attendance = data[date];
-
-      let html = `<h4>${date} <button onclick="deleteTraining('${date}')">🗑️</button></h4>`;
-      html += "<ul>";
+      let html = `<h4>${date} ${deleteBtn}</h4><table><tr><th>Spieler</th><th>Status</th></tr>`;
 
       players.forEach(p => {
-        const currentStatus = attendance[p.id] || "absent";
+        const current = attendance[p.id] || "";
+        const sel = (val) => current === val ? "selected" : "";
 
         html += `
-          <li>
-            ${p.name}:
-            <select onchange="updatePlayerTrainingStatus('${date}', '${p.id}', this.value)">
-              <option value="absent" ${currentStatus === "absent" ? "selected" : ""}>❌ Abwesend</option>
-              <option value="anwesend" ${currentStatus === "anwesend" ? "selected" : ""}>✅ Anwesend</option>
-              <option value="entschuldigt" ${currentStatus === "entschuldigt" ? "selected" : ""}>📩 Entschuldigt</option>
-              <option value="unentschuldigt" ${currentStatus === "unentschuldigt" ? "selected" : ""}>🚫 Unentschuldigt</option>
-            </select>
-          </li>`;
+          <tr>
+            <td>${p.name}</td>
+            <td>
+              <select onchange="updatePlayerTrainingStatus('${date}', '${p.id}', this.value)">
+                <option value="">–</option>
+                <option value="anwesend" ${sel("anwesend")}>Anwesend</option>
+                <option value="entschuldigt" ${sel("entschuldigt")}>Entschuldigt</option>
+                <option value="unentschuldigt" ${sel("unentschuldigt")}>Unentschuldigt</option>
+              </select>
+            </td>
+          </tr>`;
       });
 
-      html += "</ul><hr>";
+      html += "</table><hr>";
       container.innerHTML += html;
     });
   });
@@ -737,17 +768,16 @@ function loadTrainingData() {
   });
 }
 
-function deleteTrainingDay(date) {
-  if (!confirm(`Training am ${date} wirklich löschen?`)) return;
+function deleteTraining(date) {
+  if (!confirm("Möchtest du diesen Trainingstag wirklich löschen?")) return;
 
   const trainingRef = ref(db, `trainings/${date}`);
   remove(trainingRef)
     .then(() => {
       alert("Trainingstag gelöscht.");
-      loadTrainings(); // Liste neu laden
     })
     .catch((error) => {
-      console.error("Fehler beim Löschen des Trainingstags:", error);
+      console.error("Fehler beim Löschen des Trainings:", error);
     });
 }
 
