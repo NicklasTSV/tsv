@@ -706,18 +706,23 @@ function loadTrainings() {
       return;
     }
 
-    const sortedDates = Object.keys(data).sort().reverse(); // Neueste oben
+    Object.entries(data).forEach(([dateKey, attendance]) => {
+      // Nur Schlüssel im Datumsformat akzeptieren (z. B. "2025-07-24")
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return;
 
-    sortedDates.forEach(date => {
-      const attendance = data[date];
-      let html = `<h4>${date} <button onclick="deleteTrainingDay('${date}')">🗑️</button></h4><ul>`;
+      let html = `
+        <h4>${dateKey} 
+          <button onclick="deleteTraining('${dateKey}')">🗑️</button>
+        </h4>
+        <ul>
+      `;
 
       players.forEach(p => {
         const status = attendance[p.id] || "absent";
         html += `<li>${p.name}: ${status}</li>`;
       });
 
-      html += "</ul>";
+      html += "</ul><hr>";
       container.innerHTML += html;
     });
   });
