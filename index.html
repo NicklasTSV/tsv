@@ -779,7 +779,7 @@ function deleteTraining(date) {
 }
 
 function updatePlayerTrainingStatus(trainingId, playerId, status) {
-  const playerRef = ref(db, `trainings/${trainingId}/players/${playerId}`);
+  const playerRef = ref(db, `trainings/${trainingId}/${playerId}`);
   set(playerRef, status)
     .then(() => {
       console.log(`Status aktualisiert: Spieler ${playerId}, Training ${trainingId}`);
