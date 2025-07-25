@@ -387,6 +387,7 @@ function calculateAttendanceStats() {
     const data = snapshot.val() || {};
     const stats = {};
 
+    // Schritt 1: Status zählen
     Object.values(data).forEach(training => {
       Object.entries(training).forEach(([playerId, status]) => {
         if (!stats[playerId]) {
@@ -399,38 +400,42 @@ function calculateAttendanceStats() {
       });
     });
 
+    // Schritt 2: Prozentwerte pro Spieler
     const playerStats = players.map(p => {
       const s = stats[p.id] || { total: 0, present: 0 };
-      const percent = s.total > 0 ? ((s.present / s.total) * 100).toFixed(1) : "–";
+      const percent = s.total > 0 ? ((s.present / s.total) * 100).toFixed(1) : null;
       return {
         id: p.id,
         name: p.name,
-        percent: percent === "–" ? -1 : parseFloat(percent)
+        percent: percent !== null ? parseFloat(percent) : null
       };
     });
 
-    const sorted = [...playerStats].filter(p => p.percent >= 0).sort((a, b) => b.percent - a.percent);
+    // Schritt 3: Sortieren und Top/Flop bestimmen
+    const validStats = playerStats.filter(p => p.percent !== null);
+    const sorted = [...validStats].sort((a, b) => b.percent - a.percent);
     const top3 = sorted.slice(0, 3).map(p => p.id);
     const bottom3 = sorted.slice(-3).map(p => p.id);
 
-    const container = document.getElementById("trainingStats"); // ✅ geändert
+    // Schritt 4: Ausgabe in HTML-Tabelle
+    const container = document.getElementById("trainingStats");
     container.innerHTML = "<h3>📊 Anwesenheitsstatistik</h3><table><tr><th>Spieler</th><th>Anwesenheit</th></tr>";
 
     playerStats.forEach(p => {
-      let colorClass = "";
+      let color = "";
       if (top3.includes(p.id)) {
-        colorClass = 'style="color: green; font-weight: bold;"';
+        color = 'style="color: green; font-weight: bold;"';
       } else if (bottom3.includes(p.id)) {
-        colorClass = 'style="color: red; font-weight: bold;"';
+        color = 'style="color: red; font-weight: bold;"';
       }
 
-      const displayPercent = p.percent >= 0 ? `${p.percent} %` : "–";
-      container.innerHTML += `<tr><td>${p.name}</td><td ${colorClass}>${displayPercent}</td></tr>`;
+      const display = p.percent !== null ? `${p.percent} %` : "–";
+      container.innerHTML += `<tr><td>${p.name}</td><td ${color}>${display}</td></tr>`;
     });
 
     container.innerHTML += "</table>";
   }).catch((error) => {
-    console.error("Fehler beim Berechnen der Anwesenheit:", error);
+    console.error("Fehler bei Anwesenheitsstatistik:", error);
   });
 }
 
