@@ -387,7 +387,6 @@ function calculateAttendanceStats() {
     const data = snapshot.val() || {};
     const stats = {};
 
-    // Alle Trainings zählen
     Object.values(data).forEach(training => {
       Object.entries(training).forEach(([playerId, status]) => {
         if (!stats[playerId]) {
@@ -400,7 +399,6 @@ function calculateAttendanceStats() {
       });
     });
 
-    // Prozentwerte vorbereiten
     const playerStats = players.map(p => {
       const s = stats[p.id] || { total: 0, present: 0 };
       const percent = s.total > 0 ? ((s.present / s.total) * 100).toFixed(1) : "–";
@@ -411,13 +409,11 @@ function calculateAttendanceStats() {
       };
     });
 
-    // Sortieren nach Prozentwerten
     const sorted = [...playerStats].filter(p => p.percent >= 0).sort((a, b) => b.percent - a.percent);
     const top3 = sorted.slice(0, 3).map(p => p.id);
     const bottom3 = sorted.slice(-3).map(p => p.id);
 
-    // Tabelle anzeigen
-    const container = document.getElementById("trainingOverview");
+    const container = document.getElementById("trainingStats"); // ✅ geändert
     container.innerHTML = "<h3>📊 Anwesenheitsstatistik</h3><table><tr><th>Spieler</th><th>Anwesenheit</th></tr>";
 
     playerStats.forEach(p => {
