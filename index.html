@@ -662,18 +662,22 @@ function addTrainingDate() {
   const date = document.getElementById("trainingDate").value;
   if (!date) return;
 
-  const trainingRef = ref(db, `trainings/${date}`); // ❗ Datum als Key nutzen
+  const trainingRef = ref(db, `trainings/${date}`);
 
-  const initialData = {};
+  const initialPlayers = {};
   players.forEach(p => {
-    initialData[p.id] = "absent"; // oder ""
+    initialPlayers[p.id] = "absent";
   });
+
+  const initialData = {
+    players: initialPlayers
+  };
 
   set(trainingRef, initialData)
     .then(() => {
       alert("Trainingstermin angelegt.");
       document.getElementById("trainingDate").value = "";
-      loadTrainings(); // Ansicht aktualisieren
+      loadTrainings();
     })
     .catch((err) => {
       console.error("Fehler beim Anlegen des Trainings:", err);
@@ -781,7 +785,7 @@ function deleteTraining(date) {
 }
 
 function updatePlayerTrainingStatus(trainingId, playerId, status) {
-  const playerRef = ref(db, `trainings/${trainingId}/${playerId}`);
+  const playerRef = ref(db, `trainings/${trainingId}/players/${playerId}`);
   set(playerRef, status)
     .then(() => {
       console.log(`Status aktualisiert: Spieler ${playerId}, Training ${trainingId}`);
