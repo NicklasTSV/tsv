@@ -706,20 +706,28 @@ function loadTrainings() {
       return;
     }
 
-    Object.entries(data).forEach(([dateKey, attendance]) => {
-      // Nur Schlüssel im Datumsformat akzeptieren (z. B. "2025-07-24")
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return;
+    // Sortierte Anzeige nach Datum (neueste zuerst)
+    const sortedDates = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
 
-      let html = `
-        <h4>${dateKey} 
-          <button onclick="deleteTraining('${dateKey}')">🗑️</button>
-        </h4>
-        <ul>
-      `;
+    sortedDates.forEach(date => {
+      const attendance = data[date];
+
+      let html = `<h4>${date} <button onclick="deleteTraining('${date}')">🗑️</button></h4>`;
+      html += "<ul>";
 
       players.forEach(p => {
-        const status = attendance[p.id] || "absent";
-        html += `<li>${p.name}: ${status}</li>`;
+        const currentStatus = attendance[p.id] || "absent";
+
+        html += `
+          <li>
+            ${p.name}:
+            <select onchange="updatePlayerTrainingStatus('${date}', '${p.id}', this.value)">
+              <option value="absent" ${currentStatus === "absent" ? "selected" : ""}>❌ Abwesend</option>
+              <option value="anwesend" ${currentStatus === "anwesend" ? "selected" : ""}>✅ Anwesend</option>
+              <option value="entschuldigt" ${currentStatus === "entschuldigt" ? "selected" : ""}>📩 Entschuldigt</option>
+              <option value="unentschuldigt" ${currentStatus === "unentschuldigt" ? "selected" : ""}>🚫 Unentschuldigt</option>
+            </select>
+          </li>`;
       });
 
       html += "</ul><hr>";
