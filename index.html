@@ -145,8 +145,9 @@
 <button onclick="addTrainingDate()">Trainingstag hinzufügen</button>
 <div id="trainingList"></div>
 
-<h3>📋 Trainingsanwesenheit</h3>
-<div id="trainingOverview"></div>
+<h3>📊 Anwesenheitsübersicht (in %)</h3>
+<div id="trainingStats"></div>
+
   </div>
 </section>
 
@@ -374,74 +375,35 @@ if (userRole === "admin") {
   loadTrainingData();
   }
 if (userRole === "admin") {
-  calculateAttendance();
+  calculateAttendanceStats();
 }
 }
 
-function calculateAttendance() {
-  const container = document.getElementById("trainingOverview");
-  container.innerHTML = "<h3>📊 Anwesenheitsstatistik</h3>";
-
+function calculateAttendanceStats() {
   const trainingRef = ref(db, "trainings");
-  get(trainingRef).then((snapshot) => {
-    const data = snapshot.val();
-    if (!data) {
-      container.innerHTML += "<p>Keine Trainingsdaten vorhanden.</p>";
-      return;
-    }
 
+  get(trainingRef).then((snapshot) => {
+    const data = snapshot.val() || {};
     const stats = {};
 
-    players.forEach(player => {
-      stats[player.id] = {
-        name: player.name,
-        anwesend: 0,
-        entschuldigt: 0,
-        unentschuldigt: 0,
-        gesamt: 0
-      };
-    });
-
-    Object.values(data).forEach(training => {
-      players.forEach(player => {
-        const status = training[player.id];
-        if (!status) return;
-
-        stats[player.id].gesamt++;
-        if (status === "anwesend") stats[player.id].anwesend++;
-        if (status === "entschuldigt") stats[player.id].entschuldigt++;
-        if (status === "unentschuldigt") stats[player.id].unentschuldigt++;
+    Object.entries(data).forEach(([date, training]) => {
+      Object.entries(training).forEach(([playerId, status]) => {
+        if (!stats[playerId]) stats[playerId] = { total: 0, anwesend: 0 };
+        stats[playerId].total++;
+        if (status === "anwesend") stats[playerId].anwesend++;
       });
     });
 
-    // HTML-Ausgabe
-    let html = `
-      <table>
-        <tr>
-          <th>Spieler</th>
-          <th>Anwesend</th>
-          <th>Entschuldigt</th>
-          <th>Unentschuldigt</th>
-          <th>Anwesenheit (%)</th>
-        </tr>`;
+    const container = document.getElementById("trainingStats");
+    container.innerHTML = "<table><tr><th>Spieler</th><th>Anwesenheit</th></tr>";
 
-    Object.values(stats).forEach(stat => {
-      const quote = stat.gesamt > 0 ? ((stat.anwesend / stat.gesamt) * 100).toFixed(1) : "–";
-      html += `
-        <tr>
-          <td>${stat.name}</td>
-          <td>${stat.anwesend}</td>
-          <td>${stat.entschuldigt}</td>
-          <td>${stat.unentschuldigt}</td>
-          <td>${quote} %</td>
-        </tr>`;
+    players.forEach(p => {
+      const s = stats[p.id] || { total: 0, anwesend: 0 };
+      const percent = s.total > 0 ? ((s.anwesend / s.total) * 100).toFixed(1) + "%" : "–";
+      container.innerHTML += `<tr><td>${p.name}</td><td>${percent}</td></tr>`;
     });
 
-    html += "</table>";
-    container.innerHTML += html;
-  }).catch(err => {
-    console.error("Fehler beim Berechnen der Anwesenheit:", err);
-    container.innerHTML += "<p>Fehler beim Berechnen der Statistik.</p>";
+    container.innerHTML += "</table>";
   });
 }
 
