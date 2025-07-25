@@ -695,31 +695,28 @@ function loadTrainings() {
     }
 
     Object.entries(data).forEach(([date, attendance]) => {
-      const deleteBtn = (userRole === "admin")
-        ? `<button onclick="deleteTraining('${date}')">🗑️</button>`
-        : "";
+      let html = `<h4>${date} <button onclick="deleteTraining('${date}')">🗑️</button></h4>`;
+      html += `<table><tr><th>Spieler</th><th>Status</th></tr>`;
 
-      let html = `<h4>${date} ${deleteBtn}</h4><table><tr><th>Spieler</th><th>Status</th></tr>`;
-
-      players.forEach(p => {
-        const current = attendance[p.id] || "";
-        const sel = (val) => current === val ? "selected" : "";
+      players.forEach(player => {
+        const status = attendance[player.id] || ""; // ✅ Status korrekt lesen
 
         html += `
           <tr>
-            <td>${p.name}</td>
+            <td>${player.name}</td>
             <td>
-              <select onchange="updatePlayerTrainingStatus('${date}', '${p.id}', this.value)">
-                <option value="">–</option>
-                <option value="anwesend" ${sel("anwesend")}>Anwesend</option>
-                <option value="entschuldigt" ${sel("entschuldigt")}>Entschuldigt</option>
-                <option value="unentschuldigt" ${sel("unentschuldigt")}>Unentschuldigt</option>
+              <select onchange="updatePlayerTrainingStatus('${date}', '${player.id}', this.value)">
+                <option value="" ${status === "" ? "selected" : ""}>–</option>
+                <option value="anwesend" ${status === "anwesend" ? "selected" : ""}>Anwesend</option>
+                <option value="entschuldigt" ${status === "entschuldigt" ? "selected" : ""}>Entschuldigt</option>
+                <option value="unentschuldigt" ${status === "unentschuldigt" ? "selected" : ""}>Unentschuldigt</option>
               </select>
             </td>
-          </tr>`;
+          </tr>
+        `;
       });
 
-      html += "</table><hr>";
+      html += `</table><hr>`;
       container.innerHTML += html;
     });
   });
