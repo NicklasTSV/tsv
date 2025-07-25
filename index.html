@@ -367,7 +367,8 @@ function setupApp() {
   loadPlayerPenalties();
   loadEventsFromFirebase();
   loadDocsFromFirebase();
-    loadTrainings(); // ⬅️ NEU für Trainingsdaten
+  loadTrainings(); // ⬅️ NEU für Trainingsdaten
+  calculateAttendanceStats();
   updateAdminPanel();
     document.getElementById("penaltyEntry").style.display = (userRole === "editor" || userRole === "admin") ? "block" : "none";
 if (userRole === "admin") {
