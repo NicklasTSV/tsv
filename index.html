@@ -250,16 +250,19 @@ let players = []; // z. B. [{id: "...", name: "Max"}, ...]
 
 function loadPlayersFromFirebase() {
   const playersRef = ref(db, "players");
-  onValue(playersRef, (snapshot) => {
+
+  return get(playersRef).then((snapshot) => {
     const data = snapshot.val();
+    players = [];
+
     if (data) {
-      players = Object.entries(data).map(([id, name]) => ({ id, name }));
-    } else {
-      players = [];
+      players = Object.entries(data).map(([id, player]) => ({
+        id,
+        ...player,
+      }));
     }
-    updateSelects();
-    updateAdminPanel();
-    calculateAttendanceStats();
+  }).catch((error) => {
+    console.error("Fehler beim Laden der Spieler:", error);
   });
 }
 
@@ -369,6 +372,7 @@ function setupApp() {
   loadEventsFromFirebase();
   loadDocsFromFirebase();
   loadTrainings(); // ⬅️ NEU für Trainingsdaten
+  calculateAttendanceStats();
   updateAdminPanel();
     document.getElementById("penaltyEntry").style.display = (userRole === "editor" || userRole === "admin") ? "block" : "none";
 if (userRole === "admin") {
