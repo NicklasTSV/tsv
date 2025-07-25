@@ -670,26 +670,22 @@ function addTrainingDate() {
   const date = document.getElementById("trainingDate").value;
   if (!date) return;
 
-  const newKey = push(ref(db, "trainings")).key;
+  const trainingRef = ref(db, `trainings/${date}`); // ❗ Datum als Key nutzen
 
-  const playersStatus = {};
+  const initialData = {};
   players.forEach(p => {
-    playersStatus[p.id] = "absent"; // Standardstatus
+    initialData[p.id] = "absent"; // oder ""
   });
 
-  const trainingObj = {
-    date: date,
-    players: playersStatus
-  };
-
-  set(ref(db, `trainings/${newKey}`), trainingObj).then(() => {
-    alert("Trainingstermin gespeichert.");
-    document.getElementById("trainingDate").value = "";
-    loadTrainings();
-    loadTrainingData(); // auch aktualisieren
-  }).catch((error) => {
-    console.error("Fehler beim Speichern des Trainings:", error);
-  });
+  set(trainingRef, initialData)
+    .then(() => {
+      alert("Trainingstermin angelegt.");
+      document.getElementById("trainingDate").value = "";
+      loadTrainings(); // Ansicht aktualisieren
+    })
+    .catch((err) => {
+      console.error("Fehler beim Anlegen des Trainings:", err);
+    });
 }
 
 function loadTrainings() {
