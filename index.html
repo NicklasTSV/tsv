@@ -791,6 +791,7 @@ function updatePlayerTrainingStatus(trainingId, playerId, status) {
   set(playerRef, status)
     .then(() => {
       console.log(`Status aktualisiert: Spieler ${playerId}, Training ${trainingId}`);
+      calculateAttendanceStats(); // 🟢 HIER ergänzen
     })
     .catch((error) => {
       console.error("Fehler beim Speichern des Status:", error);
