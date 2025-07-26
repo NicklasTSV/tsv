@@ -360,7 +360,7 @@ function logout() {
 }
 
 function setupApp() {
-  loadPlayersFromFirebase().then(() => {
+  loadPlayersFromFirebase();
   updateSelects();
   updateSummary();
   updatePlayerSelect(); //neu 
