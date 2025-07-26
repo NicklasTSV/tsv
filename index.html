@@ -250,24 +250,6 @@ let players = []; // z. B. [{id: "...", name: "Max"}, ...]
 
 function loadPlayersFromFirebase() {
   const playersRef = ref(db, "players");
-
-  return get(playersRef).then((snapshot) => {
-    const data = snapshot.val();
-    players = [];
-
-    if (data) {
-      players = Object.entries(data).map(([id, player]) => ({
-        id,
-        ...player,
-      }));
-    }
-  }).catch((error) => {
-    console.error("Fehler beim Laden der Spieler:", error);
-  });
-}
-
-function loadPlayersFromFirebase() {
-  const playersRef = ref(db, "players");
   return get(playersRef).then((snapshot) => {
     const data = snapshot.val();
     players = [];
