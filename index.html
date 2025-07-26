@@ -266,24 +266,22 @@ function loadPlayersFromFirebase() {
   });
 }
 
-function loadDocsFromFirebase() {
-  const ul = document.getElementById("docList");
-  const adminUl = document.getElementById("adminDocList");
+function loadPlayersFromFirebase() {
+  const playersRef = ref(db, "players");
+  return get(playersRef).then((snapshot) => {
+    const data = snapshot.val();
+    players = [];
 
-  onValue(ref(db, "documents"), (snapshot) => {
-    const data = snapshot.val() || {};
-    ul.innerHTML = "";
-    adminUl.innerHTML = "";
-
-    Object.entries(data).forEach(([key, doc]) => {
-      const item = `<li><a href="${doc.url}" target="_blank">${doc.name}</a>`;
-      const deleteBtn = (userRole === "admin")
-        ? ` <button onclick="deleteDoc('${key}')">🗑️</button>`
-        : "";
-
-      ul.innerHTML += `${item}${deleteBtn}</li>`;
-      adminUl.innerHTML += `${item}${deleteBtn}</li>`;
-    });
+    if (data) {
+      // Wenn deine Struktur so ist: { id123: "Spielername" }
+      Object.entries(data).forEach(([id, name]) => {
+        players.push({ id, name });
+      });
+    } else {
+      console.warn("⚠️ Keine Spielerdaten gefunden.");
+    }
+  }).catch((error) => {
+    console.error("❌ Fehler beim Laden der Spieler:", error);
   });
 }
 
@@ -362,7 +360,7 @@ function logout() {
 }
 
 function setupApp() {
-  loadPlayersFromFirebase();
+  loadPlayersFromFirebase().then(() => {
   updateSelects();
   updateSummary();
   updatePlayerSelect(); //neu 
