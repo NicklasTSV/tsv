@@ -267,6 +267,24 @@ function loadPlayersFromFirebase() {
   });
 }
 
+function loadDocsFromFirebase() {
+  const docsRef = ref(db, "documents");
+
+  onValue(docsRef, (snapshot) => {
+    const data = snapshot.val();
+    docs = [];
+
+    if (data) {
+      Object.entries(data).forEach(([id, d]) => {
+        docs.push({ id, ...d });
+      });
+    }
+
+    updateDocList?.();       // zeigt Dokumente im normalen Bereich
+    updateAdminPanel?.();    // zeigt Dokumente im Admin-Bereich
+  });
+}
+
 function loadEventsFromFirebase() {
   const ul = document.getElementById("eventList");
   const adminUl = document.getElementById("adminEventList");
