@@ -392,7 +392,6 @@ function calculateAttendanceStats() {
     const data = snapshot.val() || {};
     const stats = {};
 
-    // Status zählen pro Spieler
     Object.values(data).forEach(training => {
       Object.entries(training.players || {}).forEach(([playerId, status]) => {
         if (!stats[playerId]) {
@@ -420,8 +419,8 @@ function calculateAttendanceStats() {
     const top3 = sorted.slice(0, 3).map(p => p.id);
     const bottom3 = sorted.slice(-3).map(p => p.id);
 
-    const container = document.getElementById("trainingStats");
-    container.innerHTML = `
+    // 👉 HTML komplett vorbereiten
+    let html = `
       <h3>📊 Anwesenheitsstatistik</h3>
       <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse;">
@@ -444,7 +443,7 @@ function calculateAttendanceStats() {
 
       const percentText = p.percent !== null ? `${p.percent} %` : "–";
 
-      container.innerHTML += `
+      html += `
         <tr>
           <td style="padding: 6px;">${p.name}</td>
           <td style="padding: 6px; ${colorStyle}">${percentText}</td>
@@ -452,11 +451,15 @@ function calculateAttendanceStats() {
       `;
     });
 
-    container.innerHTML += `
+    html += `
           </tbody>
         </table>
       </div>
     `;
+
+    // 🟢 Jetzt einmalig setzen
+    const container = document.getElementById("trainingStats");
+    container.innerHTML = html;
   }).catch((error) => {
     console.error("Fehler bei Anwesenheitsstatistik:", error);
   });
