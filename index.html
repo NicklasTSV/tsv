@@ -381,7 +381,11 @@ if (userRole === "admin") {
   loadTrainingData();
   }
 if (userRole === "admin") {
-  function calculateAttendanceStats() {
+  calculateAttendanceStats();
+}
+}
+  
+function calculateAttendanceStats() {
   const trainingRef = ref(db, "trainings");
 
   get(trainingRef).then((snapshot) => {
