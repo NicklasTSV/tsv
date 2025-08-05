@@ -392,9 +392,10 @@ function calculateAttendanceStats() {
     const data = snapshot.val() || {};
     const stats = {};
 
-    // Schritt 1: Status zählen
+    // ✅ Richtiger Zugriff: auf training.players
     Object.values(data).forEach(training => {
-      Object.entries(training).forEach(([playerId, status]) => {
+      const playersData = training.players || {};
+      Object.entries(playersData).forEach(([playerId, status]) => {
         if (!stats[playerId]) {
           stats[playerId] = { total: 0, present: 0 };
         }
@@ -405,7 +406,7 @@ function calculateAttendanceStats() {
       });
     });
 
-    // Schritt 2: Prozentwerte pro Spieler
+    // ✅ Prozent berechnen
     const playerStats = players.map(p => {
       const s = stats[p.id] || { total: 0, present: 0 };
       const percent = s.total > 0 ? ((s.present / s.total) * 100).toFixed(1) : null;
@@ -416,13 +417,12 @@ function calculateAttendanceStats() {
       };
     });
 
-    // Schritt 3: Sortieren und Top/Flop bestimmen
     const validStats = playerStats.filter(p => p.percent !== null);
     const sorted = [...validStats].sort((a, b) => b.percent - a.percent);
     const top3 = sorted.slice(0, 3).map(p => p.id);
     const bottom3 = sorted.slice(-3).map(p => p.id);
 
-    // Schritt 4: Ausgabe in HTML-Tabelle
+    // ✅ Ausgabe in HTML
     const container = document.getElementById("trainingStats");
     container.innerHTML = "<h3>📊 Anwesenheitsstatistik</h3><table><tr><th>Spieler</th><th>Anwesenheit</th></tr>";
 
