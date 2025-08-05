@@ -394,7 +394,7 @@ function calculateAttendanceStats() {
 
     // Alle Trainings durchgehen
     Object.values(data).forEach(training => {
-      const players = training.players || training; // falls Trainingsdatenstruktur leicht unterschiedlich ist
+      const players = training.players || training; // Fallback für Struktur ohne "players"
       Object.entries(players).forEach(([playerId, status]) => {
         if (!stats[playerId]) {
           stats[playerId] = { total: 0, present: 0 };
@@ -406,7 +406,7 @@ function calculateAttendanceStats() {
       });
     });
 
-    // Prozentwerte berechnen
+    // Prozentwerte pro Spieler berechnen
     const playerStats = players.map(p => {
       const s = stats[p.id] || { total: 0, present: 0 };
       const percent = s.total > 0 ? ((s.present / s.total) * 100).toFixed(1) : "–";
@@ -417,33 +417,29 @@ function calculateAttendanceStats() {
       };
     });
 
-    // Sortierung für Highlighting
+    // Beste/schlechteste 3 markieren
     const sorted = [...playerStats].filter(p => p.percent >= 0).sort((a, b) => b.percent - a.percent);
     const top3 = sorted.slice(0, 3).map(p => p.id);
     const bottom3 = sorted.slice(-3).map(p => p.id);
 
-    // Tabelle aufbauen
+    // HTML-Tabelle aufbauen
     const container = document.getElementById("trainingStats");
-    container.innerHTML = "<h3>📊 Anwesenheitsstatistik</h3><table><tr><th>Spieler</th><th>Anwesenheit</th></tr>";
-
-    playerStats.forEach(p => {
-      let colorClass = "";
-      if (top3.includes(p.id)) {
-        colorClass = 'style="color: green; font-weight: bold;"';
-      } else if (bottom3.includes(p.id)) {
-        colorClass = 'style="color: red; font-weight: bold;"';
-      }
-
-      const displayPercent = p.percent >= 0 ? `${p.percent} %` : "–";
-      container.innerHTML += `
-        <tr>
-          <td>${p.name}</td>
-          <td ${colorClass}>${displayPercent}</td>
-        </tr>
-      `;
-    });
-
-    container.innerHTML += "</table>";
+    container.innerHTML = `
+      <h3>📊 Anwesenheitsstatistik</h3>
+      <table>
+        <tr><th>Spieler</th><th>Anwesenheit</th></tr>
+        ${playerStats.map(p => {
+          let color = "";
+          if (top3.includes(p.id)) {
+            color = 'style="color: green; font-weight: bold;"';
+          } else if (bottom3.includes(p.id)) {
+            color = 'style="color: red; font-weight: bold;"';
+          }
+          const displayPercent = p.percent >= 0 ? `${p.percent} %` : "–";
+          return `<tr><td>${p.name}</td><td ${color}>${displayPercent}</td></tr>`;
+        }).join("")}
+      </table>
+    `;
   }).catch((error) => {
     console.error("Fehler beim Berechnen der Anwesenheit:", error);
   });
