@@ -78,6 +78,7 @@
   <button onclick="switchPage('catalog')">Strafenkatalog</button>
   <button onclick="switchPage('schedule')">Termine</button>
   <button onclick="switchPage('docs')">Dokumente</button>
+  <button id="navTraining" onclick="switchPage('trainingSection')" style="display: none;">📅 Training</button>
 </nav>
 
 <section id="login">
@@ -139,16 +140,24 @@
     <input id="newEventDate" type="date" />
     <button onclick="addNewEvent()">Hinzufügen</button>
     <ul id="adminEventList"></ul>
-    
-    <h3>Training</h3>
-<input id="trainingDate" type="date" />
-<button onclick="addTrainingDate()">Trainingstag hinzufügen</button>
-<div id="trainingList"></div>
-
-<h3>📊 Anwesenheitsübersicht (in %)</h3>
-<div id="trainingStats"></div>
-
   </div>
+</section>
+  
+</section>
+
+<!-- 🔒 Nur für Admin sichtbar -->
+<section id="trainingSection" style="display:none">
+  <h2>📅 Trainingsverwaltung</h2>
+
+  <h3>Trainingstage</h3>
+  <input id="trainingDate" type="date" />
+  <button onclick="addTrainingDate()">Trainingstag hinzufügen</button>
+  <div id="trainingList"></div>
+
+  <h3>📋 Anwesenheitsübersicht</h3>
+  <div id="trainingStats"></div>
+
+  <button onclick="switchPage('home')">🔙 Zurück</button>
 </section>
 
 <script>
@@ -314,8 +323,7 @@ function loadEventsFromFirebase() {
   // nicht mehr benötigt: let docs = JSON.parse(localStorage.getItem("docs")) || [];
   // nicht mehr benötigt: let events = JSON.parse(localStorage.getItem("events")) || [];
 
-
-  function switchPage(id) {
+function switchPage(id) {
   const role = sessionStorage.getItem("role");
 
   // Zugriffsschutz: Nur zur Login-Seite, wenn nicht eingeloggt
@@ -331,6 +339,12 @@ function loadEventsFromFirebase() {
   const target = document.getElementById(id);
   if (target) {
     target.style.display = "block";
+
+    // 🔁 Trainingsdaten nur bei trainingSection laden
+    if (id === "trainingSection") {
+      loadTrainings();
+      calculateAttendanceStats();
+    }
   }
 }
   
@@ -348,6 +362,10 @@ function checkPIN() {
   } else if (pin === ADMIN_PIN) {
     sessionStorage.setItem("role", "admin");
     userRole = "admin";
+
+    // ✅ Nur Admin sieht den Trainings-Link
+    document.getElementById("navTraining").style.display = "inline-block";
+
     switchPage("adminPanel");
   } else {
     alert("Falsche PIN!");
@@ -366,23 +384,25 @@ function setupApp() {
   loadPlayersFromFirebase();
   updateSelects();
   updateSummary();
-  updatePlayerSelect(); //neu 
-  updatePenaltySelect(); //neu
+  updatePlayerSelect();       // neu
+  updatePenaltySelect();      // neu
   loadPenaltyCatalog();
   loadPlayerPenalties();
   loadEventsFromFirebase();
   loadDocsFromFirebase();
-  loadTrainings(); // ⬅️ NEU für Trainingsdaten
-  calculateAttendanceStats();
+
   updateAdminPanel();
-    document.getElementById("penaltyEntry").style.display = (userRole === "editor" || userRole === "admin") ? "block" : "none";
-if (userRole === "admin") {
-  loadTrainings();
-  loadTrainingData();
+
+  // Rollenbasierte Anzeige
+  document.getElementById("penaltyEntry").style.display =
+    (userRole === "editor" || userRole === "admin") ? "block" : "none";
+
+  // Nur Admin darf Training sehen und vorbereiten
+  if (userRole === "admin") {
+    document.getElementById("navTraining").style.display = "inline-block";
+    loadTrainings();
+    calculateAttendanceStats();
   }
-if (userRole === "admin") {
-  calculateAttendanceStats();
-}
 }
   
 function calculateAttendanceStats() {
