@@ -963,16 +963,7 @@ function markPenaltiesAsPaid(playerId, penalties) {
  <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
   import { getDatabase, ref, set, get, onValue, push, remove , off } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyAb5J0yQMnNvSOtqfWvqFaaoVBjRRZxUaA",
-    authDomain: "tsv-app-54006.firebaseapp.com",
-    projectId: "tsv-app-54006",
-    storageBucket: "tsv-app-54006.firebasestorage.app",
-    messagingSenderId: "694629601085",
-    appId: "1:694629601085:web:4d40166a2d5445e3113f54",
-    databaseURL: "https://tsv-app-54006-default-rtdb.europe-west1.firebasedatabase.app"
-  };
+  import { firebaseConfig } from "./firebase-config.js"; // ⬅️ Hier wird die externe Datei eingebunden
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
