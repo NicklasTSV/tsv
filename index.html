@@ -78,6 +78,7 @@
   <button onclick="switchPage('catalog')">Strafenkatalog</button>
   <button onclick="switchPage('schedule')">Termine</button>
   <button onclick="switchPage('docs')">Dokumente</button>
+  <button onclick="switchPage('training')">📆 Training</button>
 </nav>
 
 <section id="login">
@@ -139,14 +140,20 @@
     <input id="newEventDate" type="date" />
     <button onclick="addNewEvent()">Hinzufügen</button>
     <ul id="adminEventList"></ul>
-    
-    <h3>Training</h3>
-<input id="trainingDate" type="date" />
-<button onclick="addTrainingDate()">Trainingstag hinzufügen</button>
-<div id="trainingList"></div>
 
-<h3>📊 Anwesenheitsübersicht (in %)</h3>
-<div id="trainingStats"></div>
+<section id="training" style="display: none;">
+  <h2>📆 Training & Anwesenheit</h2>
+
+  <h3>Trainingstag hinzufügen</h3>
+  <input id="trainingDate" type="date" />
+  <button onclick="addTrainingDate()">➕ Hinzufügen</button>
+  <div id="trainingList"></div>
+
+  <h3>📊 Anwesenheitsstatistik</h3>
+  <div id="trainingStats"></div>
+
+  <button onclick="switchPage('home')">🔙 Zurück</button>
+</section>
 
   </div>
 </section>
@@ -382,6 +389,9 @@ if (userRole === "admin") {
   }
 if (userRole === "admin") {
   calculateAttendanceStats();
+}
+if (userRole === "admin") {
+  document.querySelector("button[onclick=\"switchPage('training')\"]").style.display = "inline-block";
 }
 }
   
