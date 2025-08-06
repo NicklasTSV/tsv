@@ -841,6 +841,7 @@ function showPlayerDetails(playerId) {
 
   const playerRef = ref(db, `playerPenalties/${playerId}`);
 
+  // ⬛ AKTIVE STRAFEN LADEN
   get(playerRef).then((snapshot) => {
     const data = snapshot.val();
     if (!data) {
@@ -848,31 +849,43 @@ function showPlayerDetails(playerId) {
       return;
     }
 
-    let total = 0;
-
     Object.entries(data).forEach(([key, p]) => {
       const date = p.timestamp ? new Date(p.timestamp).toLocaleString() : "";
       const deleteBtn = (userRole === "admin" || userRole === "editor")
         ? ` <button onclick="deletePlayerPenalty('${playerId}', '${key}')">🗑️</button>`
         : "";
 
-      if (typeof p.amount === "number") total += p.amount;
-
       ul.innerHTML += `<li>${p.name} – ${p.amount.toFixed(2)} € – ${date}${deleteBtn}</li>`;
     });
-
-    // ✅ „Bezahlt“-Button nur für Admin/Editor anzeigen
-    if (total > 0 && (userRole === "admin" || userRole === "editor")) {
-      const btn = document.createElement("button");
-      btn.textContent = `✅ ${total.toFixed(2)} € als bezahlt markieren`;
-      btn.onclick = () => markPenaltiesAsPaid(playerId, data);
-      btn.style.marginTop = "10px";
-      ul.appendChild(btn);
-    }
-
   }).catch((error) => {
     console.error("Fehler beim Laden der Strafen:", error);
     ul.innerHTML = "<li>Fehler beim Laden der Strafen</li>";
+  });
+
+  // ⬛ ARCHIVIERTE STRAFEN LADEN
+  const historyDiv = document.getElementById("penaltyHistory");
+  historyDiv.innerHTML = "<h4>📜 Historie</h4>";
+
+  const archiveRef = ref(db, `penaltyArchive/${playerId}`);
+  get(archiveRef).then((snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      historyDiv.innerHTML += "<p>Keine Zahlungen gefunden.</p>";
+      return;
+    }
+
+    Object.entries(data).forEach(([key, entry]) => {
+      const date = entry.paidAt ? new Date(entry.paidAt).toLocaleString() : "";
+      let html = `<strong>Zahlung vom ${date} – Gesamt: ${entry.total.toFixed(2)} €</strong><ul>`;
+      entry.penalties.forEach(p => {
+        html += `<li>${p.name} – ${p.amount.toFixed(2)} €</li>`;
+      });
+      html += "</ul><hr>";
+      historyDiv.innerHTML += html;
+    });
+  }).catch((error) => {
+    console.error("Fehler beim Laden der Historie:", error);
+    historyDiv.innerHTML += "<p>Fehler beim Laden der Historie.</p>";
   });
 }
 
@@ -950,6 +963,7 @@ function markPenaltiesAsPaid(playerId, penalties) {
 <section id="playerDetails" style="display:none">
   <h2>🔍 Einzelne Strafen für <span id="detailPlayerName"></span></h2>
   <ul id="playerPenaltyDetails"></ul>
+  <div id="penaltyHistory"></div>
   <button onclick="switchPage('home')">🔙 Zurück</button>
 </section>
 
