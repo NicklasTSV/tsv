@@ -857,6 +857,13 @@ function showPlayerDetails(playerId) {
 
       ul.innerHTML += `<li>${p.name} – ${p.amount.toFixed(2)} € – ${date}${deleteBtn}</li>`;
     });
+  if ((userRole === "admin" || userRole === "editor") && Object.keys(data).length > 0) {
+  ul.innerHTML += `
+    <li>
+      <button onclick="markPenaltiesAsPaid('${playerId}')">💰 Strafen bezahlt</button>
+    </li>
+  `;
+}
   }).catch((error) => {
     console.error("Fehler beim Laden der Strafen:", error);
     ul.innerHTML = "<li>Fehler beim Laden der Strafen</li>";
