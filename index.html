@@ -321,23 +321,23 @@ function loadEventsFromFirebase() {
   // nicht mehr benötigt: let docs = JSON.parse(localStorage.getItem("docs")) || [];
   // nicht mehr benötigt: let events = JSON.parse(localStorage.getItem("events")) || [];
 
+function switchPage(id) {
+  console.log("🔁 Wechsle zu Seite:", id);
 
-  function switchPage(id) {
   const role = sessionStorage.getItem("role");
 
-  // Zugriffsschutz: Nur zur Login-Seite, wenn nicht eingeloggt
   if (!role && id !== "login") {
     alert("Bitte zuerst PIN eingeben.");
     return switchPage("login");
   }
 
-  // Alle Seiten ausblenden
   document.querySelectorAll("section").forEach(s => s.style.display = "none");
 
-  // Gewünschte Seite anzeigen
   const target = document.getElementById(id);
   if (target) {
     target.style.display = "block";
+  } else {
+    console.warn("❌ Seite nicht gefunden:", id);
   }
 }
   
