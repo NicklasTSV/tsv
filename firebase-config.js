@@ -1,4 +1,4 @@
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyDqsJOulkEPNT6Z_VD1lgbpPowMbZRYc0g",
   authDomain: "tsv-web-app-9510c.firebaseapp.com",
   databaseURL: "https://tsv-web-app-9510c-default-rtdb.europe-west1.firebasedatabase.app",
