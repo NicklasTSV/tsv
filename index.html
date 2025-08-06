@@ -859,9 +859,11 @@ function showPlayerDetails(playerId) {
     });
   if ((userRole === "admin" || userRole === "editor") && Object.keys(data).length > 0) {
   ul.innerHTML += `
-    <li>
-      <button onclick="markPenaltiesAsPaid('${playerId}')">💰 Strafen bezahlt</button>
-    </li>
+   <div style="margin-top: 10px;">
+  <button onclick="prepareMarkPenaltiesAsPaid('${playerId}')" style="background-color: green; color: white; padding: 8px 12px; border: none; border-radius: 6px; font-size: 16px;">
+    💰 Strafen bezahlt
+  </button>
+</div>
   `;
 }
   }).catch((error) => {
@@ -908,6 +910,25 @@ function deletePlayerPenalty(playerId, penaltyKey) {
     .catch((error) => {
       console.error("Fehler beim Löschen der Strafe:", error);
     });
+}
+
+function prepareMarkPenaltiesAsPaid(playerId) {
+  const playerRef = ref(db, `playerPenalties/${playerId}`);
+  get(playerRef).then((snapshot) => {
+    const penalties = snapshot.val();
+    if (!penalties || Object.keys(penalties).length === 0) {
+      alert("Keine offenen Strafen zum Archivieren.");
+      return;
+    }
+
+    // In ein Array umwandeln (optional, falls du das lieber speicherst)
+    const items = Object.values(penalties);
+
+    // Aufruf der Hauptfunktion mit vollständigen Daten
+    markPenaltiesAsPaid(playerId, items);
+  }).catch((error) => {
+    console.error("Fehler beim Laden der Strafen:", error);
+  });
 }
 
 function markPenaltiesAsPaid(playerId, penalties) {
