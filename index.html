@@ -885,6 +885,8 @@ function showPlayerDetails(playerId) {
 
     Object.entries(data).forEach(([key, entry]) => {
       const date = entry.paidAt ? new Date(entry.paidAt).toLocaleString() : "";
+      const items = entry.items || [];
+      const total = items.reduce((sum, p) => sum + (p.amount || 0), 0).toFixed(2);
       let html = `<strong>Zahlung vom ${date} – Gesamt: ${entry.total.toFixed(2)} €</strong><ul>`;
       entry.penalties.forEach(p => {
         html += `<li>${p.name} – ${p.amount.toFixed(2)} €</li>`;
