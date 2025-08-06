@@ -365,6 +365,9 @@ function checkPIN() {
     sessionStorage.setItem("role", "editor");
     userRole = "editor";
     switchPage("home");
+  } else if (pin === COACH_PIN) {
+    sessionStorage.setItem("role", "coach");
+    userRole = "coach";
   } else if (pin === ADMIN_PIN) {
     sessionStorage.setItem("role", "admin");
     userRole = "admin";
