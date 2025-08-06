@@ -875,7 +875,7 @@ function showPlayerDetails(playerId) {
   const historyDiv = document.getElementById("penaltyHistory");
   historyDiv.innerHTML = "<h4>📜 Historie</h4>";
 
-  const archiveRef = ref(db, `penaltyArchive/${playerId}`);
+  const archiveRef = ref(db, `paidPenalties/${playerId}`);
   get(archiveRef).then((snapshot) => {
     const data = snapshot.val();
     if (!data) {
