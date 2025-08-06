@@ -336,6 +336,13 @@ function switchPage(id) {
   const target = document.getElementById(id);
   if (target) {
     target.style.display = "block";
+  if (id === "training") {
+    loadTrainings();
+    calculateAttendanceStats();
+  }
+} else {
+  console.warn("❌ Seite nicht gefunden:", id);
+}
   } else {
     console.warn("❌ Seite nicht gefunden:", id);
   }
