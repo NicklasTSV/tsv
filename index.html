@@ -871,34 +871,37 @@ function showPlayerDetails(playerId) {
     ul.innerHTML = "<li>Fehler beim Laden der Strafen</li>";
   });
 
-  // ⬛ ARCHIVIERTE STRAFEN LADEN
-  const historyDiv = document.getElementById("penaltyHistory");
-  historyDiv.innerHTML = "<h4>📜 Historie</h4>";
+// ⬛ ARCHIVIERTE STRAFEN LADEN
+const historyDiv = document.getElementById("penaltyHistory");
+historyDiv.innerHTML = "<h4>📜 Historie</h4>";
 
-  const archiveRef = ref(db, `paidPenalties/${playerId}`);
-  get(archiveRef).then((snapshot) => {
-    const data = snapshot.val();
-    if (!data) {
-      historyDiv.innerHTML += "<p>Keine Zahlungen gefunden.</p>";
-      return;
-    }
+const archiveRef = ref(db, `paidPenalties/${playerId}`);
+get(archiveRef).then((snapshot) => {
+  const data = snapshot.val();
+  if (!data) {
+    historyDiv.innerHTML += "<p>Keine Zahlungen gefunden.</p>";
+    return;
+  }
 
-    Object.entries(data).forEach(([key, entry]) => {
-      const date = entry.paidAt ? new Date(entry.paidAt).toLocaleString() : "";
-      const items = entry.items || [];
-      const total = items.reduce((sum, p) => sum + (p.amount || 0), 0).toFixed(2);
-      let html = `<strong>Zahlung vom ${date} – Gesamt: ${total.toFixed(2)} €</strong><ul>`;
-      items.forEach(p => {
-        html += `<li>${p.name} – ${p.amount.toFixed(2)} €</li>`;
-      });
-      html += "</ul><hr>";
-      historyDiv.innerHTML += html;
+  Object.entries(data).forEach(([key, entry]) => {
+    const date = entry.paidAt ? new Date(entry.paidAt).toLocaleString() : "";
+    const items = Array.isArray(entry.items) ? entry.items : [];
+
+    const total = items.reduce((sum, p) => sum + (p.amount || 0), 0).toFixed(2);
+
+    let html = `<strong>Zahlung vom ${date} – Gesamt: ${total} €</strong><ul>`;
+    items.forEach(p => {
+      html += `<li>${p.name} – ${p.amount.toFixed(2)} €</li>`;
     });
-  }).catch((error) => {
-    console.error("Fehler beim Laden der Historie:", error);
-    historyDiv.innerHTML += "<p>Fehler beim Laden der Historie.</p>";
+    html += "</ul><hr>";
+    historyDiv.innerHTML += html;
+  });
+}).catch((error) => {
+  console.error("Fehler beim Laden der Historie:", error);
+  historyDiv.innerHTML += "<p>Fehler beim Laden der Historie.</p>";
   });
 }
+
 
 function deletePlayerPenalty(playerId, penaltyKey) {
   if (!confirm("Möchtest du diese Strafe wirklich löschen?")) return;
