@@ -165,6 +165,7 @@
   // Session-Login-Zustände
   const ROLE_VIEWER = "viewer";
   const ROLE_EDITOR = "editor";
+  const ROLE_COACH = "coach";
   const ROLE_ADMIN = "admin";
 
   let sessionRole = sessionStorage.getItem("role");
@@ -186,6 +187,10 @@
       sessionStorage.setItem("role", ROLE_ADMIN);
       userRole = ROLE_ADMIN;
       switchPage("adminPanel");
+    } else if (pin === COACH_PIN) {
+    sessionStorage.setItem("role", "ROLE_COACH");
+    userRole = "ROLE_COACH";
+    switchPage("home");
     } else {
       alert("Falsche PIN!");
       return;
@@ -219,6 +224,7 @@
 
   const BASIC_PIN = "1919_2025";
   const POWER_PIN = "TSV!1919";
+  const ADMIN_PIN = "CoachTSV";
   const ADMIN_PIN = "Strafen!2025";
   let userRole = null;
 
@@ -397,8 +403,11 @@ function setupApp() {
   document.getElementById("penaltyEntry").style.display =
     (userRole === "editor" || userRole === "admin") ? "block" : "none";
 
-  // Nur Admin darf Training sehen und vorbereiten
-  if (userRole === "admin") {
+  // Admin-Panel nur für Admins sichtbar machen
+  document.getElementById("adminPanel").style.display = (userRole === "admin") ? "block" : "none";
+
+  // Nur Admin und coach darf Training sehen und vorbereiten
+  if (userRole === "admin" || userRole === "coach") {
     document.getElementById("navTraining").style.display = "inline-block";
     loadTrainings();
     calculateAttendanceStats();
