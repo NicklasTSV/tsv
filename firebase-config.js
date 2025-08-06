@@ -1,9 +1,9 @@
-export const firebaseConfig = {
-    apiKey: "AIzaSyAb5J0yQMnNvSOtqfWvqFaaoVBjRRZxUaA",
-    authDomain: "tsv-app-54006.firebaseapp.com",
-    projectId: "tsv-app-54006",
-    storageBucket: "tsv-app-54006.firebasestorage.app",
-    messagingSenderId: "694629601085",
-    appId: "1:694629601085:web:4d40166a2d5445e3113f54",
-    databaseURL: "https://tsv-app-54006-default-rtdb.europe-west1.firebasedatabase.app"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyDqsJOulkEPNT6Z_VD1lgbpPowMbZRYc0g",
+  authDomain: "tsv-web-app-9510c.firebaseapp.com",
+  databaseURL: "https://tsv-web-app-9510c-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "tsv-web-app-9510c",
+  storageBucket: "tsv-web-app-9510c.firebasestorage.app",
+  messagingSenderId: "1076165265421",
+  appId: "1:1076165265421:web:c5f0d5f98600015feaed44"
+};
