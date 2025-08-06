@@ -326,23 +326,27 @@ function switchPage(id) {
 
   const role = sessionStorage.getItem("role");
 
+  // 🛑 Zugriffsschutz – bei fehlender Rolle weiterleiten zur Login-Seite
   if (!role && id !== "login") {
     alert("Bitte zuerst PIN eingeben.");
-    return switchPage("login");
+    switchPage("login"); // Nur aufrufen, nicht returnen!
+    return;
   }
 
+  // ⛔ Alle Sektionen ausblenden
   document.querySelectorAll("section").forEach(s => s.style.display = "none");
 
+  // 🎯 Zielseite anzeigen
   const target = document.getElementById(id);
   if (target) {
     target.style.display = "block";
-  if (id === "training") {
-    loadTrainings();
-    calculateAttendanceStats();
-  }
-} else {
-  console.warn("❌ Seite nicht gefunden:", id);
-}
+
+    // 📌 Sonderfunktion für Trainingsseite
+    if (id === "training") {
+      loadTrainings();
+      calculateAttendanceStats();
+    }
+
   } else {
     console.warn("❌ Seite nicht gefunden:", id);
   }
